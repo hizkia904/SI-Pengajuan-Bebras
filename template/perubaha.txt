@@ -1,0 +1,5 @@
+style name T1 diubah jadi CHANGED
+style fr2 harus diubah juga jadi CHANGED2
+tambahin automatic styles
+tambahin highlight style (tapi kayanya gak ngaruh)
+RESERVED_()
