@@ -15,7 +15,7 @@ export async function POST(request: Request) {
       const random_name = uuidv4();
       const image = formData.get(`files[${i}]`);
       const type = image.name.split(".")[1];
-      console.log(image);
+
       const arrayBuffer = await image.arrayBuffer();
       const buffer = new Uint8Array(arrayBuffer);
       await fs.writeFile(`./public/images/${random_name}.${type}`, buffer);
@@ -25,7 +25,6 @@ export async function POST(request: Request) {
       isImages.push(true);
       i++;
     } else {
-      console.log("break");
       break;
     }
   }

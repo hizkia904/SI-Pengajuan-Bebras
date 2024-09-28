@@ -4,8 +4,67 @@ import type {
   IUploaderAnswer,
   IUploaderData,
 } from "jodit/esm/types/uploader";
-import React, { Fragment, useMemo, useRef, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
+const optionsWithoutImage = [
+  "bold",
+  "italic",
+  "underline",
+  "strikethrough",
+  "eraser",
+  "|",
+  "ul",
+  "ol",
+  "|",
+  "fontsize",
+  "paragraph",
+  "|",
+  "outdent",
+  "indent",
+  "align",
+  "lineHeight",
+  "|",
+  "superscript",
+  "subscript",
+  "selectall",
+  "|",
+  "table",
+  "link",
+  "|",
+  "source",
+  "undo",
+  "redo",
+];
+const optionsWithImage = [
+  "bold",
+  "italic",
+  "underline",
+  "strikethrough",
+  "eraser",
+  "|",
+  "ul",
+  "ol",
+  "|",
+  "fontsize",
+  "paragraph",
+  "|",
+  "outdent",
+  "indent",
+  "align",
+  "lineHeight",
+  "|",
+  "superscript",
+  "subscript",
+  "selectall",
+  "|",
+  "image",
+  "table",
+  "link",
+  "|",
+  "source",
+  "undo",
+  "redo",
+];
 export default function JoditEditor({
   setField,
   nama,
@@ -21,28 +80,6 @@ export default function JoditEditor({
   useID?: boolean;
   useImage?: boolean;
 }) {
-  const button = [
-    "bold",
-    "italic",
-    "underline",
-    "strikethrough",
-    "eraser",
-    "ul",
-    "ol",
-    "font",
-    "fontsize",
-    "paragraph",
-    "lineHeight",
-    "superscript",
-    "subscript",
-    "selectall",
-    "table",
-    "link",
-    "source",
-  ];
-  if (useImage == true) {
-    button.push("image");
-  }
   const uploader: Partial<IUploaderOptions<string>> = {
     url: "/api/uploadImage",
     isSuccess: function (resp) {
@@ -52,9 +89,7 @@ export default function JoditEditor({
       console.log("error", e);
     },
     process(resp: IUploaderAnswer) {
-      console.log(resp);
       if (addImage) {
-        console.log(resp);
         resp.data.files.forEach(
           (value: string, index: number, array: string[]) => {
             addImage(resp.data.fileNames[index], value);
@@ -73,9 +108,6 @@ export default function JoditEditor({
 
   const config = useMemo(
     () => ({
-      events: {
-        onBeforeDelete: (node: any) => console.log("delete"),
-      },
       createAttributes: {
         table: {
           style: "border:1px solid;border-collapse:collapse;width: 100%;",
@@ -84,20 +116,22 @@ export default function JoditEditor({
         td: { style: " border: 1px solid;" },
       },
       uploader: uploader,
-      removeButtons: [
-        "spellcheck",
-        "speechRecognize",
-        "cut",
-        "copy",
-        "paste",
-        "font",
-        "brush",
-      ],
-      toolbarButtonSize: "middle",
-      toolbarAdaptive: false,
-      readonly: false,
 
-      buttons: button,
+      readonly: false,
+      placeholder: "Insert here",
+      defaultActionOnPaste: "insert_as_html",
+      defaultLineHeight: 1.5,
+      // enter: "P",
+      // options that we defined in above step.
+      buttons: useImage == true ? optionsWithImage : optionsWithoutImage,
+      buttonsMD: useImage == true ? optionsWithImage : optionsWithoutImage,
+      buttonsSM: useImage == true ? optionsWithImage : optionsWithoutImage,
+      buttonsXS: useImage == true ? optionsWithImage : optionsWithoutImage,
+      statusbar: true,
+      sizeLG: 900,
+      sizeMD: 700,
+      sizeSM: 400,
+      toolbarAdaptive: false,
     }),
     []
   );

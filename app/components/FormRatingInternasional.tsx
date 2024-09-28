@@ -67,7 +67,6 @@ export default function FormRatingInternasional({
             bordered
             dataSource={ratingInternasional}
             renderItem={(item: any, index: number) => {
-              console.log(item);
               return <RatingInternasional key={item.id_rating} value={item} />;
             }}
           />

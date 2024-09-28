@@ -35,6 +35,8 @@ export interface TableRows {
   status_internasional: string;
   last_updated: string;
   tahun: number;
+  biro_uploader: string;
+  biro_last_updated: string;
 }
 
 export interface BankSoalTableRows {

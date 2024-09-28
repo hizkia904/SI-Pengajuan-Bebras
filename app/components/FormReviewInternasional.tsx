@@ -50,7 +50,6 @@ export default function FormReviewInternasional({
     onChange: async (info) => {
       const arrayBuffer = await info.file.originFileObj?.arrayBuffer();
 
-      console.log(info.fileList);
       let buffer;
       if (arrayBuffer) {
         buffer = Buffer.from(arrayBuffer);

@@ -70,7 +70,6 @@ export default function FormRating({
             bordered
             dataSource={rating}
             renderItem={(item: any, index: number) => {
-              console.log(item);
               return <RatingNasional key={item.id_rating} value={item} />;
             }}
           />

@@ -15,7 +15,6 @@ export default async function TableBankSoal() {
     dataSource =
       "Unable to load data for question bank table. Please try again shortly.";
   }
-  console.log(dataSource);
 
   return (
     <>

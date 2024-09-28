@@ -5,9 +5,11 @@ import { useEffect, useState } from "react";
 export default function CustomizeCheckbox({
   checked,
   onChange,
+  disabled = false,
 }: {
   checked: any;
   onChange: (e: any) => Promise<void>;
+  disabled?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   useEffect(() => {
@@ -17,6 +19,7 @@ export default function CustomizeCheckbox({
     <>
       {loading == false ? (
         <Checkbox
+          disabled={disabled}
           checked={checked}
           onChange={async (e) => {
             const changedValue = e.target.checked;

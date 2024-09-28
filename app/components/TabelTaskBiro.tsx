@@ -10,14 +10,16 @@ export default async function TabelTaskBiro() {
   let dataSource: TableRows[] | null;
   let rating: any[] | null;
   const { user } = await validateRequest();
-  console.log(user);
+
   try {
     const query =
-      "select soal_usulan.id_soal_usulan as key,u.nama as uploader,w.nama as who_last_updated,(soal).task_title,(soal).answer_type,tahun," +
+      "select soal_usulan.id_soal_usulan as key,u.nama as uploader,bu.nama as biro_uploader,bw.nama as biro_last_updated,w.nama as who_last_updated,(soal).task_title,(soal).answer_type,tahun," +
       "status_nasional,gotointernational,status_internasional,last_updated" +
       " from soal_usulan " +
       "inner join user_bebras u on soal_usulan.uploader = u.id " +
       "inner join user_bebras w on soal_usulan.who_last_updated = w.id " +
+      "inner join biro bu on u.id_biro = bu.id_biro " +
+      "inner join biro bw on w.id_biro=bw.id_biro " +
       "inner join pembuat_soal_usulan p on " +
       "p.id_soal_usulan = soal_usulan.id_soal_usulan " +
       "where p.id_user=$1 order by key DESC";

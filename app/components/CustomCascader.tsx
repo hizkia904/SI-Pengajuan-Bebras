@@ -39,7 +39,6 @@ export default function CustomCascader({
             let indexDuplicate = null;
             for (let i = 0; i < value.length - 1; i++) {
               if (value[i][0] == umur_last_inserted) {
-                console.log("DUPLICATE");
                 indexDuplicate = i;
               }
             }

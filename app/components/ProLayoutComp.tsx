@@ -40,7 +40,6 @@ export default function ProLayoutComp({
   role: string | undefined;
 }) {
   const path_now = usePathname();
-  console.log(path_now);
 
   const initial_state = path_now.startsWith("/tim_nasional/bank_soal")
     ? "/tim_nasional/bank_soal"
@@ -117,14 +116,11 @@ export default function ProLayoutComp({
                 icon={<FontAwesomeIcon icon={faRightFromBracket} />}
                 onClick={async () => {
                   try {
-                    console.log("log out");
                     const res = await logout();
                     if (!res.error) {
                       window.location.reload();
                     }
-                  } catch (e) {
-                    console.log("error");
-                  }
+                  } catch (e) {}
                 }}
               />
             </>

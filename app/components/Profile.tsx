@@ -169,7 +169,6 @@ export default function Profile({
         onOk={() => {
           if (tahap == "input_old") {
             formOldPass.submit();
-            console.log("still old");
           } else {
             formNewPass.submit();
           }

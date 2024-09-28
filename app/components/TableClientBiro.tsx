@@ -10,6 +10,7 @@ import {
   Tooltip,
   Progress,
   Spin,
+  Tag,
 } from "antd";
 import Link from "next/link";
 import {
@@ -38,7 +39,7 @@ import ButtonWithLoading from "./ButtonWithLoading";
 import CustomizeCheckbox from "./CustomizeCheckbox";
 import { useContext } from "react";
 import { MyContext } from "./ProLayoutComp";
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 export function TableClientBiro({
   dataSource,
@@ -54,16 +55,19 @@ export function TableClientBiro({
   function CustomRow(props: any) {
     let who;
     let when;
+    let biro;
     for (let i = 0; i < props.children.length; i++) {
       if (props.children[i].props.record.key == props["data-row-key"]) {
         who = props.children[i].props.record.who_last_updated;
         when = transformTimestamp(props.children[i].props.record.last_updated);
+        biro = props.children[i].props.record.biro_last_updated;
         break;
       }
     }
     const tooltip = (
       <Text>
-        Last updated by <Text strong>{who}</Text> at <Text italic>{when}</Text>
+        Last updated by <Text strong>{who}</Text> ({biro}) at{" "}
+        <Text italic>{when}</Text>
       </Text>
     );
 
@@ -93,9 +97,16 @@ export function TableClientBiro({
     },
     {
       title: "Uploaded by",
-      dataIndex: "uploader",
       key: "uploader",
       align: "center",
+      render(value, record, index) {
+        return (
+          <>
+            {record.uploader}
+            <br />({record.biro_uploader})
+          </>
+        );
+      },
     },
     {
       title: "Rata-rata Rating",
@@ -119,11 +130,11 @@ export function TableClientBiro({
       align: "center",
       render(value, record, index) {
         if (value == "ACCEPTED") {
-          return <Text type="success">{value}</Text>;
+          return <Tag color="success">{value}</Tag>;
         } else if (value == "REJECTED") {
-          return <Text type="danger">{value}</Text>;
-        } else if (value == null) {
-          return <EllipsisOutlined />;
+          return <Tag color="error">{value}</Tag>;
+        } else {
+          return <Tag color="default">{value}</Tag>;
         }
       },
     },
@@ -146,14 +157,16 @@ export function TableClientBiro({
       key: "status_internasional",
       align: "center",
       render(value: any, record: TableRows, index: number) {
-        if (value == "ACCEPTED") {
-          return <Text type="success">{value}</Text>;
+        if (value == null) {
+          return <Tag color="default">-</Tag>;
+        } else if (value == "ACCEPTED") {
+          return <Tag color="success">{value}</Tag>;
         } else if (value == "HELDBACK") {
-          return <Text type="danger">{value}</Text>;
+          return <Tag color="error">{value}</Tag>;
         } else if (value == "WORK NEEDED") {
-          return <Text type="warning">{value}</Text>;
-        } else if (value == null) {
-          return <EllipsisOutlined />;
+          return <Tag color="warning">{value}</Tag>;
+        } else {
+          return <Tag color="default">{value}</Tag>;
         }
       },
     },

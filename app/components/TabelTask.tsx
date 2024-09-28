@@ -9,11 +9,14 @@ export default async function TabelTask() {
   let rating: any[] | null;
   try {
     const query =
-      "select soal_usulan.id_soal_usulan as key,u.nama as uploader,w.nama as who_last_updated,(soal).task_title,(soal).answer_type,tahun," +
+      "select soal_usulan.id_soal_usulan as key,u.nama as uploader,bu.nama as biro_uploader,bw.nama as biro_last_updated,w.nama as who_last_updated,(soal).task_title,(soal).answer_type,tahun," +
       "status_nasional,gotointernational,status_internasional,last_updated" +
       " from soal_usulan " +
       "inner join user_bebras u on soal_usulan.uploader = u.id " +
-      "inner join user_bebras w on soal_usulan.who_last_updated = w.id order by key DESC";
+      "inner join user_bebras w on soal_usulan.who_last_updated = w.id " +
+      "inner join biro bu on u.id_biro = bu.id_biro " +
+      "inner join biro bw on w.id_biro = bw.id_biro " +
+      "order by key DESC";
     const getData = await runQuery(query, []);
     dataSource = getData.rows;
 

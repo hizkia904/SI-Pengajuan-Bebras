@@ -26,19 +26,25 @@ export default function Persiapan({
       const transformValues = { ...values };
       transformValues.deadline_tahap1 =
         transformValues.deadline_tahap1.toDate();
+      transformValues.deadline_tahap1.setSeconds(0);
       transformValues.deadline_tahap2 =
         transformValues.deadline_tahap2.toDate();
+      transformValues.deadline_tahap2.setSeconds(0);
       transformValues.deadline_tahap3 =
         transformValues.deadline_tahap3.toDate();
+      transformValues.deadline_tahap3.setSeconds(0);
       transformValues.deadline_tahap4 =
         transformValues.deadline_tahap4.toDate();
+      transformValues.deadline_tahap4.setSeconds(0);
       transformValues.deadline_tahap5 =
         transformValues.deadline_tahap5.toDate();
+      transformValues.deadline_tahap5.setSeconds(0);
       transformValues.deadline_tahap6 =
         transformValues.deadline_tahap6.toDate();
+      transformValues.deadline_tahap6.setSeconds(0);
       transformValues.deadline_tahap7 =
         transformValues.deadline_tahap7.toDate();
-
+      transformValues.deadline_tahap7.setSeconds(0);
       await addSchedule(transformValues);
       router.refresh();
       if (openNotification) {
@@ -123,11 +129,13 @@ export default function Persiapan({
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
               onChange={(date: dayjs.Dayjs, dateString: string | string[]) => {
-                if (date.minute() == 59 && date.hour() == 23) {
-                  const addOneDay = date.add(1, "day");
-                  setTahap1(addOneDay);
-                } else {
-                  setTahap1(date);
+                if (date != null) {
+                  if (date.minute() == 59 && date.hour() == 23) {
+                    const addOneDay = date.add(1, "day");
+                    setTahap1(addOneDay);
+                  } else {
+                    setTahap1(date);
+                  }
                 }
               }}
             />
@@ -143,6 +151,9 @@ export default function Persiapan({
               },
               {
                 validator(rule, value, callback) {
+                  if (value == null) {
+                    return Promise.resolve();
+                  }
                   if (value.isAfter(tahap1)) {
                     return Promise.resolve();
                   }
@@ -160,11 +171,13 @@ export default function Persiapan({
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
               onChange={(date: dayjs.Dayjs, dateString: string | string[]) => {
-                if (date.minute() == 59 && date.hour() == 23) {
-                  const addOneDay = date.add(1, "day");
-                  setTahap2(addOneDay);
-                } else {
-                  setTahap2(date);
+                if (date != null) {
+                  if (date.minute() == 59 && date.hour() == 23) {
+                    const addOneDay = date.add(1, "day");
+                    setTahap2(addOneDay);
+                  } else {
+                    setTahap2(date);
+                  }
                 }
               }}
               disabledTime={(date: dayjs.Dayjs) => {
@@ -199,6 +212,9 @@ export default function Persiapan({
               },
               {
                 validator(rule, value, callback) {
+                  if (value == null) {
+                    return Promise.resolve();
+                  }
                   if (value.isAfter(tahap2)) {
                     return Promise.resolve();
                   }
@@ -216,11 +232,13 @@ export default function Persiapan({
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
               onChange={(date: dayjs.Dayjs, dateString: string | string[]) => {
-                if (date.minute() == 59 && date.hour() == 23) {
-                  const addOneDay = date.add(1, "day");
-                  setTahap3(addOneDay);
-                } else {
-                  setTahap3(date);
+                if (date != null) {
+                  if (date.minute() == 59 && date.hour() == 23) {
+                    const addOneDay = date.add(1, "day");
+                    setTahap3(addOneDay);
+                  } else {
+                    setTahap3(date);
+                  }
                 }
               }}
               disabledTime={(date: dayjs.Dayjs) => {
@@ -255,6 +273,9 @@ export default function Persiapan({
               },
               {
                 validator(rule, value, callback) {
+                  if (value == null) {
+                    return Promise.resolve();
+                  }
                   if (value.isAfter(tahap3)) {
                     return Promise.resolve();
                   }
@@ -272,11 +293,13 @@ export default function Persiapan({
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
               onChange={(date: dayjs.Dayjs, dateString: string | string[]) => {
-                if (date.minute() == 59 && date.hour() == 23) {
-                  const addOneDay = date.add(1, "day");
-                  setTahap4(addOneDay);
-                } else {
-                  setTahap4(date);
+                if (date != null) {
+                  if (date.minute() == 59 && date.hour() == 23) {
+                    const addOneDay = date.add(1, "day");
+                    setTahap4(addOneDay);
+                  } else {
+                    setTahap4(date);
+                  }
                 }
               }}
               disabledTime={(date: dayjs.Dayjs) => {
@@ -311,6 +334,9 @@ export default function Persiapan({
               },
               {
                 validator(rule, value, callback) {
+                  if (value == null) {
+                    return Promise.resolve();
+                  }
                   if (value.isAfter(tahap4)) {
                     return Promise.resolve();
                   }
@@ -328,11 +354,13 @@ export default function Persiapan({
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
               onChange={(date: dayjs.Dayjs, dateString: string | string[]) => {
-                if (date.minute() == 59 && date.hour() == 23) {
-                  const addOneDay = date.add(1, "day");
-                  setTahap5(addOneDay);
-                } else {
-                  setTahap5(date);
+                if (date != null) {
+                  if (date.minute() == 59 && date.hour() == 23) {
+                    const addOneDay = date.add(1, "day");
+                    setTahap5(addOneDay);
+                  } else {
+                    setTahap5(date);
+                  }
                 }
               }}
               disabledTime={(date: dayjs.Dayjs) => {
@@ -367,6 +395,9 @@ export default function Persiapan({
               },
               {
                 validator(rule, value, callback) {
+                  if (value == null) {
+                    return Promise.resolve();
+                  }
                   if (value.isAfter(tahap5)) {
                     return Promise.resolve();
                   }
@@ -384,11 +415,13 @@ export default function Persiapan({
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
               onChange={(date: dayjs.Dayjs, dateString: string | string[]) => {
-                if (date.minute() == 59 && date.hour() == 23) {
-                  const addOneDay = date.add(1, "day");
-                  setTahap6(addOneDay);
-                } else {
-                  setTahap6(date);
+                if (date != null) {
+                  if (date.minute() == 59 && date.hour() == 23) {
+                    const addOneDay = date.add(1, "day");
+                    setTahap6(addOneDay);
+                  } else {
+                    setTahap6(date);
+                  }
                 }
               }}
               disabledTime={(date: dayjs.Dayjs) => {
@@ -423,6 +456,9 @@ export default function Persiapan({
               },
               {
                 validator(rule, value, callback) {
+                  if (value == null) {
+                    return Promise.resolve();
+                  }
                   if (value.isAfter(tahap6)) {
                     return Promise.resolve();
                   }

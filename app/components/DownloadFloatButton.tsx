@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingOutlined } from "@ant-design/icons";
-import { FloatButton } from "antd";
+import { FloatButton, Tooltip } from "antd";
 import { CSSProperties, ReactNode, useContext, useState } from "react";
 import { downloadUsingPandoc, getImage } from "../actions";
 import { MyContext } from "./ProLayoutComp";
@@ -14,12 +14,14 @@ export default function DownloadFloatButton({
   id_soal_usulan,
   title,
   style,
+  tooltip,
 }: {
   icon: ReactNode;
   typeDownload: "image" | "file";
   id_soal_usulan: string;
   title: string;
   style: CSSProperties;
+  tooltip: string;
 }) {
   const [loading, setLoading] = useState(false);
 
@@ -79,10 +81,12 @@ export default function DownloadFloatButton({
     }
   };
   return (
-    <FloatButton
-      style={style}
-      icon={loading == true ? <LoadingOutlined spin={false} /> : icon}
-      onClick={loading == false ? handleClick : undefined}
-    />
+    <Tooltip title={tooltip}>
+      <FloatButton
+        style={style}
+        icon={loading == true ? <LoadingOutlined spin={false} /> : icon}
+        onClick={loading == false ? handleClick : undefined}
+      />
+    </Tooltip>
   );
 }

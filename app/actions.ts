@@ -117,8 +117,6 @@ export async function downloadUsingPandoc(
 
   const pembuat = getPembuat.rows;
 
-  const commandTurnToODT = ["-f", "html", "-t", "opendocument"];
-
   const template_komen =
     "<p>EDIT ABOVE (keep this template and add above this line): author, " +
     "e-mail, date (YYYY-MM-DD): <em>Comment, including documentation of and " +
@@ -132,9 +130,9 @@ export async function downloadUsingPandoc(
     "is to ensure the consequent use of terminology in the task body and to " +
     "facilitate translation.</p>";
 
-  let body = `<h2>Body</h2><div>${
-    konten.body
-  }</div><h2>Question / Challenge</h2>${konten.question}<h2>Answer Options /
+  let body = `<h2>Body</h2>${konten.body}<h2>Question / Challenge</h2>${
+    konten.question
+  }<h2>Answer Options /
 Interactivity Description</h2>${
     konten.answer_options
   }<h2>Answer Explanation</h2>${
@@ -153,18 +151,13 @@ ${
   konten.comments == null ? "" : konten.comments
 }${template_komen}<h2>Graphics and Other Files</h2>`;
   if (konten.graphics != null) {
-    body += `<div>${konten.graphics}</div>`;
+    body += `${konten.graphics}`;
   }
 
-  body = body.replaceAll(`src="/images`, `src="./images`);
+  // body = body.replaceAll(`src="/images`, `src="./images`);
 
   body = body.replaceAll("&nbsp;", " ");
 
-  // let graphics_ODT;
-
-  // if (konten.graphics) {
-  //   graphics_ODT = await nodepandoc(konten.graphics, commandTurnToODT);
-  // }
   const random_string = uuidv4();
 
   const args = [
@@ -184,17 +177,14 @@ ${
     "./public",
     "-L",
     "./template/filter3.lua",
+    "-L",
+    "./template/replace.lua",
   ];
 
   if (konten.keep_order == "true") {
     args.push("-V");
     args.push("keep_order");
   }
-
-  // if (konten.graphics) {
-  //   args.push("-V");
-  //   args.push(`graphics=${graphics_ODT}`);
-  // }
 
   for (let i = 0; i < usia.length; i++) {
     args.push("-V");
@@ -208,9 +198,6 @@ ${
     args.push("-V");
     args.push(`authors=${pembuat[i].pembuat}`);
   }
-
-  // const args2 =
-  //   "pandoc -f html --template=./template2024/2024-XY-01-eng.opendocument -t odt -o hasilpakeTemplate2024.odt";
 
   try {
     const res = await nodepandoc(body, args);
@@ -389,28 +376,146 @@ export async function addSchedule(values: any) {
     deadline_tahap7,
   } = values;
 
-  const query =
-    "update info_bebras " +
-    "set deadline_tahap1=$1," +
-    "deadline_tahap2=$2," +
-    "deadline_tahap3=$3," +
-    "deadline_tahap4=$4," +
-    "deadline_tahap5=$5," +
-    "deadline_tahap6=$6," +
-    "deadline_tahap7=$7," +
-    "tahap_sekarang=1";
+  const client = await getClient();
 
-  const res = await runQuery(query, [
-    deadline_tahap1,
-    deadline_tahap2,
-    deadline_tahap3,
-    deadline_tahap4,
-    deadline_tahap5,
-    deadline_tahap6,
-    deadline_tahap7,
-  ]);
-  if (res.rowCount == 0) {
-    throw new Error();
+  try {
+    await client.query("BEGIN");
+    const query =
+      "update info_bebras " +
+      "set deadline_tahap1=$1," +
+      "deadline_tahap2=$2," +
+      "deadline_tahap3=$3," +
+      "deadline_tahap4=$4," +
+      "deadline_tahap5=$5," +
+      "deadline_tahap6=$6," +
+      "deadline_tahap7=$7," +
+      "tahap_sekarang=1";
+
+    const res = await client.query(query, [
+      deadline_tahap1,
+      deadline_tahap2,
+      deadline_tahap3,
+      deadline_tahap4,
+      deadline_tahap5,
+      deadline_tahap6,
+      deadline_tahap7,
+    ]);
+
+    const query2 =
+      "update soal_usulan set status_nasional='SUBMITTED',status_internasional=NULL";
+
+    const res2 = await client.query(query2, []);
+
+    if (res.rowCount == 0 || res2.rowCount == 0) {
+      throw new Error();
+    }
+
+    const oneMinute = 60 * 1000;
+    const startDeadlineTahap1 = new Date(deadline_tahap1.getTime() - oneMinute);
+    const endDeadlineTahap1 = new Date(deadline_tahap1.getTime() + oneMinute);
+
+    const startDeadlineTahap2 = new Date(deadline_tahap2.getTime() - oneMinute);
+    const endDeadlineTahap2 = new Date(deadline_tahap2.getTime() + oneMinute);
+
+    const startDeadlineTahap3 = new Date(deadline_tahap3.getTime() - oneMinute);
+    const endDeadlineTahap3 = new Date(deadline_tahap3.getTime() + oneMinute);
+
+    const startDeadlineTahap4 = new Date(deadline_tahap4.getTime() - oneMinute);
+    const endDeadlineTahap4 = new Date(deadline_tahap4.getTime() + oneMinute);
+
+    const startDeadlineTahap5 = new Date(deadline_tahap5.getTime() - oneMinute);
+    const endDeadlineTahap5 = new Date(deadline_tahap5.getTime() + oneMinute);
+
+    const startDeadlineTahap6 = new Date(deadline_tahap6.getTime() - oneMinute);
+    const endDeadlineTahap6 = new Date(deadline_tahap6.getTime() + oneMinute);
+
+    const startDeadlineTahap7 = new Date(deadline_tahap7.getTime() - oneMinute);
+    const endDeadlineTahap7 = new Date(deadline_tahap7.getTime() + oneMinute);
+
+    //deadline tahap1
+    await client.query(
+      "update pgagent.pga_schedule set jscstart=$1,jscend=$2 where jscname='SCHEDULE_PHASE2'",
+      [startDeadlineTahap1, endDeadlineTahap1]
+    );
+
+    //deadline tahap2
+    await client.query(
+      "update pgagent.pga_schedule set jscstart=$1,jscend=$2 where jscname='SCHEDULE_PHASE3'",
+      [startDeadlineTahap2, endDeadlineTahap2]
+    );
+
+    //deadline tahap3
+    await client.query(
+      "update pgagent.pga_schedule set jscstart=$1,jscend=$2 where jscname='SCHEDULE_PHASE4'",
+      [startDeadlineTahap3, endDeadlineTahap3]
+    );
+
+    //deadline tahap4
+    await client.query(
+      "update pgagent.pga_schedule set jscstart=$1,jscend=$2 where jscname='SCHEDULE_PHASE5'",
+      [startDeadlineTahap4, endDeadlineTahap4]
+    );
+
+    //deadline tahap5
+    await client.query(
+      "update pgagent.pga_schedule set jscstart=$1,jscend=$2 where jscname='SCHEDULE_PHASE6'",
+      [startDeadlineTahap5, endDeadlineTahap5]
+    );
+
+    //deadline tahap6
+    await client.query(
+      "update pgagent.pga_schedule set jscstart=$1,jscend=$2 where jscname='SCHEDULE_PHASE7'",
+      [startDeadlineTahap6, endDeadlineTahap6]
+    );
+
+    //deadline tahap7
+    await client.query(
+      "update pgagent.pga_schedule set jscstart=$1,jscend=$2 where jscname='SCHEDULE_PHASE0'",
+      [startDeadlineTahap7, endDeadlineTahap7]
+    );
+
+    //pastiin waktu run deadline tahap1
+    await client.query(
+      "update pgagent.pga_job set jobnextrun=$1 where jobid=1",
+      [deadline_tahap1]
+    );
+    //pastiin waktu run deadline tahap2
+    await client.query(
+      "update pgagent.pga_job set jobnextrun=$1 where jobid=2",
+      [deadline_tahap2]
+    );
+    //pastiin waktu run deadline tahap3
+    await client.query(
+      "update pgagent.pga_job set jobnextrun=$1 where jobid=3",
+      [deadline_tahap3]
+    );
+    //pastiin waktu run deadline tahap4
+    await client.query(
+      "update pgagent.pga_job set jobnextrun=$1 where jobid=4",
+      [deadline_tahap4]
+    );
+    //pastiin waktu run deadline tahap5
+    await client.query(
+      "update pgagent.pga_job set jobnextrun=$1 where jobid=5",
+      [deadline_tahap5]
+    );
+    //pastiin waktu run deadline tahap6
+    await client.query(
+      "update pgagent.pga_job set jobnextrun=$1 where jobid=6",
+      [deadline_tahap6]
+    );
+    //pastiin waktu run deadline tahap7
+    await client.query(
+      "update pgagent.pga_job set jobnextrun=$1 where jobid=7",
+      [deadline_tahap7]
+    );
+
+    await client.query("COMMIT");
+    client.release();
+  } catch (e) {
+    await client.query("ROLLBACK");
+    client.release();
+    throw e;
   }
 }
 
@@ -541,9 +646,9 @@ export async function signup(values: any): Promise<ActionResult> {
   const userId = res.rows[0].id;
 
   const session = await lucia.createSession(userId, {});
-  console.log(session);
+
   const sessionCookie = lucia.createSessionCookie(session.id);
-  console.log(sessionCookie);
+
   cookies().set(
     sessionCookie.name,
     sessionCookie.value,
@@ -593,7 +698,7 @@ export async function addTask(
   try {
     const title = values.title;
     const keep_order = `${values.keep_order}`;
-    console.log(typeof keep_order);
+
     const imagePaths = values.imagePaths;
     const body = values.body;
     const question = values.question;
@@ -619,8 +724,8 @@ export async function addTask(
 
     // tambah add task
     const queryAddTask =
-      "insert into soal_usulan(uploader,who_last_updated,soal,last_updated,tahun) " +
-      "VALUES ($16,$17,ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),now(),$15) returning id_soal_usulan;";
+      "insert into soal_usulan(uploader,who_last_updated,soal,last_updated,tahun,status_nasional) " +
+      "VALUES ($16,$17,ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),now(),$15,'SUBMITTED') returning id_soal_usulan;";
 
     const hasilAddTask = await client.query(queryAddTask, [
       title,
@@ -658,7 +763,7 @@ export async function addTask(
       angka += 2;
       arrKategori.push(id_soal_usulan, categories[i]);
     }
-    console.log(queryKategori);
+
     await client.query(queryKategori, arrKategori);
 
     // tambah pembuat soal
@@ -735,7 +840,7 @@ export async function updateTask(
   try {
     const title = values.title;
     const keep_order = `${values.keep_order}`;
-    console.log(typeof keep_order);
+
     const imagePaths = values.imagePaths;
     const body = values.body;
     const question = values.question;
@@ -804,7 +909,7 @@ export async function updateTask(
       angka += 2;
       arrKategori.push(id_soal_usulan, categories[i]);
     }
-    console.log(queryKategori);
+
     await client.query(queryKategori, arrKategori);
 
     // tambah pembuat soal

@@ -1,6 +1,12 @@
 "use client";
-import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
-import { Descriptions, DescriptionsProps } from "antd";
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  EllipsisOutlined,
+} from "@ant-design/icons";
+import { Descriptions, DescriptionsProps, Tag, Typography } from "antd";
+
+const { Text } = Typography;
 
 export default function StatusSectionBiroClient({ status }: { status: any }) {
   const items: DescriptionsProps["items"] = [
@@ -8,7 +14,14 @@ export default function StatusSectionBiroClient({ status }: { status: any }) {
       key: "1",
       style: { textAlign: "center" },
       label: "Status Nasional",
-      children: status.status_nasional == null ? "-" : status.status_nasional,
+      children:
+        status.status_nasional == "ACCEPTED" ? (
+          <Tag color="success">{status.status_nasional}</Tag>
+        ) : status.status_nasional == "REJECTED" ? (
+          <Tag color="error">{status.status_nasional}</Tag>
+        ) : (
+          <Tag color="default">{status.status_nasional}</Tag>
+        ),
     },
     {
       key: "2",
@@ -26,7 +39,17 @@ export default function StatusSectionBiroClient({ status }: { status: any }) {
       style: { textAlign: "center" },
       label: "Status Internasional",
       children:
-        status.status_internasional == null ? "-" : status.status_internasional,
+        status.status_internasional == null ? (
+          <Tag color="default">-</Tag>
+        ) : status.status_internasional == "ACCEPTED" ? (
+          <Tag color="success">{status.status_internasional}</Tag>
+        ) : status.status_internasional == "HELDBACK" ? (
+          <Tag color="error">{status.status_internasional}</Tag>
+        ) : status.status_internasional == "WORK NEEDED" ? (
+          <Tag color="warning">{status.status_internasional}</Tag>
+        ) : (
+          <Tag color="default">-</Tag>
+        ),
     },
   ];
 

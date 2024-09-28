@@ -15,6 +15,7 @@ import {
   Select,
   Spin,
   Tabs,
+  Tooltip,
   Typography,
 } from "antd";
 
@@ -91,7 +92,6 @@ export default function FormAddBankSoal({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log("refresh");
     setLoading(false);
   }, [chosenAge]);
 
@@ -151,8 +151,6 @@ export default function FormAddBankSoal({
   };
 
   const openNotification = useContext(MyContext);
-
-  console.log(chosenCategories);
 
   const [task_title, set_task_title] = useState("ID");
   const [body, setBody] = useState("ID");
@@ -491,7 +489,7 @@ export default function FormAddBankSoal({
                                 "age",
                               ]
                             );
-                            console.log(dependencies);
+
                             dependencies.splice(index, 1);
 
                             return (
@@ -1279,12 +1277,13 @@ export default function FormAddBankSoal({
                 useImage={false}
               />
             </Item>
-
-            <FloatButton
-              onClick={() => form.submit()}
-              type="primary"
-              icon={<SendOutlined />}
-            />
+            <Tooltip title="Submit">
+              <FloatButton
+                onClick={() => form.submit()}
+                type="primary"
+                icon={<SendOutlined />}
+              />
+            </Tooltip>
           </Form>
           {/* <TinyMCE name="as" setField={setField} /> */}
         </>

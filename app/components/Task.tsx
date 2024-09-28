@@ -131,8 +131,11 @@ export default async function Task({ task_id }: { task_id: string }) {
   // uploader dan yang terakhir kali mengupdate soal
   try {
     const queryUploaderAndWhoLastUpdated =
-      "select u.nama as uploader,w.nama as who_last_updated from soal_usulan s inner join user_bebras u " +
-      "on s.uploader = u.id inner join user_bebras w on s.who_last_updated=w.id where id_soal_usulan=$1";
+      "select bu.nama as biro_uploader, bw.nama as biro_last_updated, u.nama as uploader,w.nama as who_last_updated from soal_usulan s inner join user_bebras u " +
+      "on s.uploader = u.id inner join user_bebras w on s.who_last_updated=w.id " +
+      "inner join biro bu on bu.id_biro = u.id_biro " +
+      "inner join biro bw on bw.id_biro = w.id_biro " +
+      " where id_soal_usulan=$1 ";
     const getUploaderAndWhoLastUpdated = await runQuery(
       queryUploaderAndWhoLastUpdated,
       [task_id]
@@ -254,9 +257,15 @@ export default async function Task({ task_id }: { task_id: string }) {
                     by{" "}
                     {typeof uploaderAndWhoLastUpdated.who_last_updated ==
                     "string" ? (
-                      <Text strong>
-                        {uploaderAndWhoLastUpdated.who_last_updated}
-                      </Text>
+                      <>
+                        <Text strong>
+                          {uploaderAndWhoLastUpdated.who_last_updated}
+                        </Text>
+                        <br />
+                        <Text>
+                          &nbsp;({uploaderAndWhoLastUpdated.biro_last_updated})
+                        </Text>
+                      </>
                     ) : (
                       uploaderAndWhoLastUpdated.who_last_updated
                     )}
@@ -269,7 +278,11 @@ export default async function Task({ task_id }: { task_id: string }) {
                 label: "Uploaded by",
                 children:
                   typeof uploaderAndWhoLastUpdated.uploader == "string" ? (
-                    <Text strong>{uploaderAndWhoLastUpdated.uploader}</Text>
+                    <>
+                      <Text strong>{uploaderAndWhoLastUpdated.uploader}</Text>
+                      <br />
+                      <Text>({uploaderAndWhoLastUpdated.biro_uploader})</Text>
+                    </>
                   ) : (
                     uploaderAndWhoLastUpdated.uploader
                   ),
@@ -379,25 +392,61 @@ export default async function Task({ task_id }: { task_id: string }) {
             Wording and Phrases
           </Divider>
           <Paragraph id="wording_phrases">
-            {typeof dataKontenSoal.wording_phrases == "string"
-              ? parse(dataKontenSoal.wording_phrases)
-              : dataKontenSoal.wording_phrases}
+            {typeof dataKontenSoal.wording_phrases == "object" ? (
+              dataKontenSoal.wording_phrases == null ? (
+                <Paragraph
+                  type="secondary"
+                  italic
+                  style={{ textAlign: "center" }}
+                >
+                  No Value
+                </Paragraph>
+              ) : (
+                dataKontenSoal.wording_phrases
+              )
+            ) : (
+              parse(dataKontenSoal.wording_phrases)
+            )}
           </Paragraph>
           <Divider style={{ borderColor: "#1677ff" }}>Comments</Divider>
 
           <Paragraph id="comments">
-            {typeof dataKontenSoal.comments == "string"
-              ? parse(dataKontenSoal.comments)
-              : dataKontenSoal.comments}
+            {typeof dataKontenSoal.comments == "object" ? (
+              dataKontenSoal.comments == null ? (
+                <Paragraph
+                  type="secondary"
+                  italic
+                  style={{ textAlign: "center" }}
+                >
+                  No Value
+                </Paragraph>
+              ) : (
+                dataKontenSoal.comments
+              )
+            ) : (
+              parse(dataKontenSoal.comments)
+            )}
           </Paragraph>
 
           <Divider style={{ borderColor: "#1677ff" }}>
             Graphics and Other Files
           </Divider>
           <Paragraph id="graphics">
-            {typeof dataKontenSoal.graphics == "string"
-              ? parse(dataKontenSoal.graphics)
-              : dataKontenSoal.graphics}
+            {typeof dataKontenSoal.graphics == "object" ? (
+              dataKontenSoal.graphics == null ? (
+                <Paragraph
+                  type="secondary"
+                  italic
+                  style={{ textAlign: "center" }}
+                >
+                  No Value
+                </Paragraph>
+              ) : (
+                dataKontenSoal.graphics
+              )
+            ) : (
+              parse(dataKontenSoal.graphics)
+            )}
           </Paragraph>
 
           <Divider style={{ borderColor: "#1677ff" }}>

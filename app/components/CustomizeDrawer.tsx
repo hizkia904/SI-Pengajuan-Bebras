@@ -1,7 +1,7 @@
 "use client";
 
 import { CommentOutlined, StarOutlined } from "@ant-design/icons";
-import { Drawer, FloatButton, Tabs, TabsProps } from "antd";
+import { Drawer, FloatButton, Tabs, TabsProps, Tooltip } from "antd";
 import React, { Suspense, useState } from "react";
 import ReviewNasionalSection from "./ReviewNasionalSection";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -55,7 +55,7 @@ export default function CustomizeDrawer({
     },
     {
       key: "3",
-      label: "Rating Internasional",
+      label: "Rating Internasional sebelum Workshop",
       icon: <StarOutlined />,
       children: rating_internasional,
     },
@@ -74,11 +74,13 @@ export default function CustomizeDrawer({
   ];
   return (
     <>
-      <FloatButton
-        onClick={showDrawer}
-        type="primary"
-        icon={<CommentOutlined />}
-      />
+      <Tooltip title="Review and Rating">
+        <FloatButton
+          onClick={showDrawer}
+          type="primary"
+          icon={<CommentOutlined />}
+        />
+      </Tooltip>
       <Drawer
         title="Review dan Rating"
         width={720}

@@ -81,7 +81,6 @@ export default async function UpdateTask({
       'select path,file_name as "fileName" from gambar_soal_usulan where id_soal_usulan=$1';
     const getChosenImage = await runQuery(queryChosenImage, [id_soal_usulan]);
     chosenImage = getChosenImage.rows;
-    console.log(chosenImage);
   } catch (e) {
     categories = null;
     age = null;
@@ -92,8 +91,7 @@ export default async function UpdateTask({
     editedValue = null;
     chosenImage = null;
   }
-  console.log(chosenAge);
-  console.log(chosenCategories);
+
   return categories != null &&
     age != null &&
     anggota != null &&

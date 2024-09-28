@@ -29,6 +29,7 @@ export default async function Download({
 
   return typeof title == "string" ? (
     <DownloadFloatButton
+      tooltip={typeDownload == "file" ? "Download File" : "Download Images"}
       style={style}
       title={title}
       id_soal_usulan={id_soal_usulan}

@@ -1,6 +1,6 @@
 "use client";
 import { TableRows } from "@/interface";
-import { Typography, Table, TableProps, Tooltip } from "antd";
+import { Typography, Table, TableProps, Tooltip, Tag } from "antd";
 import Link from "next/link";
 import {
   changeGoToInternational,
@@ -14,6 +14,9 @@ import CustomizeSelect from "./CustomizeSelect";
 
 import transformTimestamp from "@/dateTransform";
 import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  EllipsisOutlined,
   FileImageOutlined,
   FileOutlined,
   FileTextOutlined,
@@ -40,16 +43,19 @@ export function TableClient({
   function CustomRow(props: any) {
     let who;
     let when;
+    let biro;
     for (let i = 0; i < props.children.length; i++) {
       if (props.children[i].props.record.key == props["data-row-key"]) {
         who = props.children[i].props.record.who_last_updated;
         when = transformTimestamp(props.children[i].props.record.last_updated);
+        biro = props.children[i].props.record.biro_last_updated;
         break;
       }
     }
     const tooltip = (
       <Text>
-        Last updated by <Text strong>{who}</Text> at <Text italic>{when}</Text>
+        Last updated by <Text strong>{who}</Text> ({biro}) at{" "}
+        <Text italic>{when}</Text>
       </Text>
     );
 
@@ -79,9 +85,16 @@ export function TableClient({
     },
     {
       title: "Uploaded by",
-      dataIndex: "uploader",
       key: "uploader",
       align: "center",
+      render(value, record, index) {
+        return (
+          <>
+            {record.uploader}
+            <br />({record.biro_uploader})
+          </>
+        );
+      },
     },
     {
       title: "Rata-rata Rating",
@@ -104,35 +117,51 @@ export function TableClient({
       key: "status_nasional",
       align: "center",
       render(value: any, record: TableRows, index: number) {
-        return (
-          <CustomizeSelect
-            options={[
-              { value: "ACCEPTED", label: "ACCEPTED" },
-              { value: "REJECTED", label: "REJECTED" },
-            ]}
-            value={value}
-            onChange={async (changedValue: any) => {
-              try {
-                await changeNationalStatus(changedValue, record.key);
-                router.refresh();
-                if (openNotification) {
-                  openNotification(
-                    "success",
-                    "Successfully Updated the National Status"
-                  );
-                }
-              } catch (e) {
-                router.refresh();
-                if (openNotification) {
-                  openNotification(
-                    "error",
-                    "Failed to update the National Status"
-                  );
-                }
-              }
-            }}
-          />
-        );
+        if (record.status_internasional != null) {
+          if (value == "ACCEPTED") {
+            return <Tag color="success">{value}</Tag>;
+          } else if (value == "REJECTED") {
+            return <Tag color="error">{value}</Tag>;
+          }
+        } else {
+          if (
+            value == "ACCEPTED" ||
+            value == "REJECTED" ||
+            value == "FILTERING"
+          ) {
+            return (
+              <CustomizeSelect
+                options={[
+                  { value: "ACCEPTED", label: "ACCEPTED" },
+                  { value: "REJECTED", label: "REJECTED" },
+                ]}
+                value={value == "FILTERING" ? undefined : value}
+                onChange={async (changedValue: any) => {
+                  try {
+                    await changeNationalStatus(changedValue, record.key);
+                    router.refresh();
+                    if (openNotification) {
+                      openNotification(
+                        "success",
+                        "Successfully Updated the National Status"
+                      );
+                    }
+                  } catch (e) {
+                    router.refresh();
+                    if (openNotification) {
+                      openNotification(
+                        "error",
+                        "Failed to update the National Status"
+                      );
+                    }
+                  }
+                }}
+              />
+            );
+          } else {
+            return <Tag color="default">{value}</Tag>;
+          }
+        }
       },
     },
     {
@@ -141,33 +170,48 @@ export function TableClient({
       key: "gotointernational",
       align: "center",
       render(value: any, record: TableRows, index: number) {
-        return (
-          <>
-            <CustomizeCheckbox
-              checked={value}
-              onChange={async (changedValue: any) => {
-                try {
-                  await changeGoToInternational(changedValue, record.key);
-                  router.refresh();
-                  if (openNotification) {
-                    openNotification(
-                      "success",
-                      "Successfully Updated Go To International"
-                    );
-                  }
-                } catch (e) {
-                  router.refresh();
-                  if (openNotification) {
-                    openNotification(
-                      "error",
-                      "Failed to update Go To International"
-                    );
-                  }
+        if (record.status_internasional != null) {
+          if (value == true) {
+            return <CheckCircleOutlined style={{ color: "green" }} />;
+          } else {
+            return <CloseCircleOutlined style={{ color: "red" }} />;
+          }
+        } else {
+          return (
+            <>
+              <CustomizeCheckbox
+                disabled={
+                  record.status_nasional == "FILTERING" ||
+                  record.status_nasional == "ACCEPTED" ||
+                  record.status_nasional == "REJECTED"
+                    ? false
+                    : true
                 }
-              }}
-            />
-          </>
-        );
+                checked={value}
+                onChange={async (changedValue: any) => {
+                  try {
+                    await changeGoToInternational(changedValue, record.key);
+                    router.refresh();
+                    if (openNotification) {
+                      openNotification(
+                        "success",
+                        "Successfully Updated Go To International"
+                      );
+                    }
+                  } catch (e) {
+                    router.refresh();
+                    if (openNotification) {
+                      openNotification(
+                        "error",
+                        "Failed to update Go To International"
+                      );
+                    }
+                  }
+                }}
+              />
+            </>
+          );
+        }
       },
     },
     {
@@ -176,36 +220,49 @@ export function TableClient({
       key: "status_internasional",
       align: "center",
       render(value: any, record: TableRows, index: number) {
-        return (
-          <CustomizeSelect
-            options={[
-              { value: "ACCEPTED", label: "ACCEPTED" },
-              { value: "WORK NEEDED", label: "WORK NEEDED" },
-              { value: "HELDBACK", label: "HELDBACK" },
-            ]}
-            value={value}
-            onChange={async (changedValue: any) => {
-              try {
-                await changeInternationalStatus(changedValue, record.key);
-                router.refresh();
-                if (openNotification) {
-                  openNotification(
-                    "success",
-                    "Successfully Updated the International Status"
-                  );
+        if (
+          value == "WAITING FOR RESULT" ||
+          value == "ACCEPTED" ||
+          value == "WORK NEEDED" ||
+          value == "HELDBACK"
+        ) {
+          return (
+            <CustomizeSelect
+              options={[
+                { value: "ACCEPTED", label: "ACCEPTED" },
+                { value: "WORK NEEDED", label: "WORK NEEDED" },
+                { value: "HELDBACK", label: "HELDBACK" },
+              ]}
+              value={value == "WAITING FOR RESULT" ? undefined : value}
+              onChange={async (changedValue: any) => {
+                try {
+                  await changeInternationalStatus(changedValue, record.key);
+                  router.refresh();
+                  if (openNotification) {
+                    openNotification(
+                      "success",
+                      "Successfully Updated the International Status"
+                    );
+                  }
+                } catch (e) {
+                  router.refresh();
+                  if (openNotification) {
+                    openNotification(
+                      "error",
+                      "Failed to update the International Status"
+                    );
+                  }
                 }
-              } catch (e) {
-                router.refresh();
-                if (openNotification) {
-                  openNotification(
-                    "error",
-                    "Failed to update the International Status"
-                  );
-                }
-              }
-            }}
-          />
-        );
+              }}
+            />
+          );
+        } else {
+          if (value == null) {
+            return <Tag color="default">-</Tag>;
+          } else {
+            return <Tag color="default">{value}</Tag>;
+          }
+        }
       },
     },
     {

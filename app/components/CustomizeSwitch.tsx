@@ -17,7 +17,6 @@ export default function CustomizeSwitch({
     (child) => (child as React.ReactElement).key == ".$edit"
   );
 
-  // console.log(arr);
   const [mode, setMode] = useState(false);
 
   return (
