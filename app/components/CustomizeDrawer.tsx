@@ -3,7 +3,7 @@
 import { CommentOutlined, StarOutlined } from "@ant-design/icons";
 import { Drawer, FloatButton, Tabs, TabsProps, Tooltip } from "antd";
 import React, { Suspense, useState } from "react";
-import ReviewNasionalSection from "./ReviewNasionalSection";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquarePollHorizontal } from "@fortawesome/free-solid-svg-icons";
 

@@ -51,17 +51,19 @@ export default function FormAddTask({
   editedValue,
   id_soal_usulan,
   chosenImage,
+  roleUser,
 }: {
   categories: any[];
   age: any[];
   anggota: any[];
-  id_user: number | undefined;
+  id_user: number;
   id_soal_usulan?: string;
   chosenAge?: any[];
   chosenCategories?: any[];
   editedValue?: BebrasTask;
   chosenAuthors?: Authors[];
   chosenImage?: imagePath[];
+  roleUser?: string;
 }) {
   const [form] = Form.useForm();
 
@@ -102,7 +104,6 @@ export default function FormAddTask({
 
   const setField = (nama: string, value: string) => {
     form.setFieldsValue({ [nama]: value });
-    console.log(form.getFieldValue(nama));
   };
   const arrImage: imagePath[] = chosenImage == undefined ? [] : chosenImage;
 
@@ -115,7 +116,11 @@ export default function FormAddTask({
     try {
       values.imagePaths = arrImage;
       await addTask(values, id_user);
-      window.location.href = "/biro/bebras_task";
+      if (roleUser == "BIRO") {
+        window.location.href = "/biro/bebras_task/pengajuan?p=1";
+      } else if (roleUser == "TIM NASIONAL") {
+        window.location.href = "/tim_nasional/bebras_task/pengajuan?p=1";
+      }
     } catch (err) {
       if (openNotification) {
         openNotification("error", "Failed to Add Task");
@@ -130,7 +135,6 @@ export default function FormAddTask({
   }, [chosenAge]);
   const onFinishUpdate = async (value: ValuesFormAddTask) => {
     setLoading(true);
-    console.log(arrImage);
     try {
       value.imagePaths = arrImage;
       await updateTask(value, id_user, id_soal_usulan);
@@ -653,7 +657,7 @@ export default function FormAddTask({
               <List
                 initialValue={
                   chosenAuthors == undefined
-                    ? [{ authors: null, peran: null }]
+                    ? [{ authors: null, peran: null, main: false }]
                     : chosenAuthors
                 }
                 name="authors_peran"
@@ -665,7 +669,20 @@ export default function FormAddTask({
                           new Error("Please fill at least 1 authors")
                         );
                       } else {
-                        return Promise.resolve();
+                        let haveOneMainAuthor = false;
+                        for (let i = 0; i < names.length; i++) {
+                          if (names[i]?.main == true) {
+                            haveOneMainAuthor = true;
+                            break;
+                          }
+                        }
+                        if (haveOneMainAuthor == true) {
+                          return Promise.resolve();
+                        } else {
+                          return Promise.reject(
+                            new Error("Authors should have one main author")
+                          );
+                        }
                       }
                     },
                   },
@@ -696,7 +713,38 @@ export default function FormAddTask({
                         return (
                           <Fragment key={key}>
                             <Row gutter={5}>
-                              <Col span={11}>
+                              <Col span={3}>
+                                <Item
+                                  {...restField}
+                                  name={[name, "main"]}
+                                  valuePropName="checked"
+                                  initialValue={false}
+                                >
+                                  <Checkbox
+                                    onChange={(e) => {
+                                      const valueNow =
+                                        form.getFieldValue("authors_peran");
+
+                                      for (
+                                        let i = 0;
+                                        i < valueNow.length;
+                                        i++
+                                      ) {
+                                        if (i != index) {
+                                          valueNow[i].main = false;
+                                        }
+                                      }
+                                      form.setFieldValue(
+                                        "authors_peran",
+                                        valueNow
+                                      );
+                                    }}
+                                  >
+                                    Main Author
+                                  </Checkbox>
+                                </Item>
+                              </Col>
+                              <Col span={10}>
                                 <Item
                                   dependencies={dependencies}
                                   {...restField}
@@ -763,7 +811,7 @@ export default function FormAddTask({
                                   />
                                 </Item>
                               </Col>
-                              <Col span={11}>
+                              <Col span={10}>
                                 <Form.Item
                                   {...restField}
                                   name={[name, "peran"]}
@@ -781,7 +829,7 @@ export default function FormAddTask({
                                   />
                                 </Form.Item>
                               </Col>
-                              <Col span={2}>
+                              <Col span={1}>
                                 <Button
                                   icon={<MinusCircleOutlined />}
                                   onClick={() => remove(name)}

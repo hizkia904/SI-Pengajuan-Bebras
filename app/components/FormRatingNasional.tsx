@@ -4,108 +4,101 @@ import {
   Button,
   Divider,
   Form,
-  Input,
   List,
   Rate,
   Spin,
-  Space,
   Typography,
+  Space,
 } from "antd";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
-
 import { addRating } from "../actions";
-
 import {
   LoadingOutlined,
   SendOutlined,
   CloseOutlined,
   EditOutlined,
 } from "@ant-design/icons";
-import { MyContext } from "./ProLayoutComp";
+import transformTimestamp from "@/dateTransform";
 
+import { MyContext } from "./ProLayoutComp";
 const { Item } = Form;
 const { Text } = Typography;
 const { Item: ItemList } = List;
 const { Compact } = Space;
-export default function FormRatingInternasional({
+export default function FormRatingNasional({
+  id_user,
   id_soal_usulan,
-  ratingInternasional,
+  rating,
+  rata_rating,
 }: {
+  id_user: number | undefined;
   id_soal_usulan: string;
-  ratingInternasional: any[];
+  rating: any[];
+  rata_rating: any;
 }) {
   const openNotification = useContext(MyContext);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [isLastActionSuccess, setSuccess] = useState(false);
-  const [page, changePage] = useState(1);
-  const [form] = Form.useForm();
-  const onFinishRatingInternasional = async (values: any) => {
+  const onFinishRating = async (values: any) => {
     try {
       setLoading(true);
-      await addRating(values, false, undefined, undefined, id_soal_usulan);
+      await addRating(values, true, undefined, id_user, id_soal_usulan);
       setSuccess(true);
       router.refresh();
       if (openNotification) {
-        openNotification("success", "Successfully add International Rating");
+        openNotification("success", "Successfully add rating");
       }
-    } catch (e) {
+    } catch (err) {
       setSuccess(false);
       router.refresh();
       if (openNotification) {
-        openNotification("error", "Failed to add international rating");
+        openNotification("error", "Failed to add rating");
       }
     }
   };
+
   useEffect(() => {
     if (isLastActionSuccess == true) {
       form.resetFields();
     }
     setLoading(false);
-  }, [ratingInternasional]);
+  }, [rating]);
+
+  const [form] = Form.useForm();
+
+  const [page, changePage] = useState(1);
+
+  const [isLastActionSuccess, setSuccess] = useState(false);
 
   return (
     <>
-      {ratingInternasional.length !== 0 && (
-        <>
-          <List
-            header="Rating Internasional"
-            pagination={{
-              current: page,
-              total: ratingInternasional.length,
-              pageSize: 1,
-              onChange(page, pageSize) {
-                changePage(page);
-              },
-            }}
-            bordered
-            dataSource={ratingInternasional}
-            renderItem={(item: any, index: number) => {
-              return <RatingInternasional key={item.id_rating} value={item} />;
-            }}
-          />
-        </>
-      )}
+      <Space direction="vertical" style={{ width: "100%" }}>
+        <Text>Average Rating of this task : {rata_rating}</Text>
+        {rating.length != 0 && (
+          <>
+            <List
+              header="Rating"
+              pagination={{
+                current: page,
+                total: rating.length,
+                pageSize: 1,
+                onChange(page, pageSize) {
+                  changePage(page);
+                },
+              }}
+              bordered
+              dataSource={rating}
+              renderItem={(item: any, index: number) => {
+                return <RatingNasional key={item.id_rating} value={item} />;
+              }}
+            />
+          </>
+        )}
+      </Space>
       <Divider style={{ borderColor: "#1677ff" }}>Add new rating</Divider>
       {loading == false ? (
-        <Form
-          form={form}
-          onFinish={onFinishRatingInternasional}
-          layout="vertical"
-        >
-          <Item
-            name="nama"
-            label="Name"
-            rules={[
-              {
-                required: true,
-                message: "Please insert the name",
-              },
-            ]}
-          >
-            <Input />
-          </Item>
+        <Form form={form} onFinish={onFinishRating} layout="vertical">
           <Item
             name="rating_as_for_now"
             label="Rating As for Now"
@@ -132,7 +125,7 @@ export default function FormRatingInternasional({
           </Item>
 
           <Button type="primary" htmlType="submit" icon={<SendOutlined />}>
-            Add International rating
+            Add rating
           </Button>
         </Form>
       ) : (
@@ -142,30 +135,32 @@ export default function FormRatingInternasional({
   );
 }
 
-function RatingInternasional({ value }: { value: any }) {
+function RatingNasional({ value }: { value: any }) {
   const openNotification = useContext(MyContext);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [isLastActionSucces, setLastActionSuccess] = useState(true);
   const [openUpdateForm, setOpenForm] = useState(false);
-  const [form] = Form.useForm();
   const onFinishUpdateRating = async (values: any) => {
     try {
       setLoading(true);
-      await addRating(values, false, value.id_rating_internasional);
+      await addRating(values, true, value.id_rating);
       setLastActionSuccess(true);
       router.refresh();
       if (openNotification) {
-        openNotification("success", "Successfully update international rating");
+        openNotification("success", "Successfully update rating");
       }
     } catch (err) {
       setLastActionSuccess(false);
       router.refresh();
       if (openNotification) {
-        openNotification("error", "Failed to update international rating");
+        openNotification("error", "Failed to update rating");
       }
     }
   };
+
+  const [form] = Form.useForm();
+
   useEffect(() => {
     if (isLastActionSucces == true) {
       form.resetFields();
@@ -173,11 +168,12 @@ function RatingInternasional({ value }: { value: any }) {
     }
     setLoading(false);
   }, [value]);
+
   return (
     <ItemList>
       {openUpdateForm == false ? (
         <Space direction="vertical">
-          <Text strong>{value.name}</Text>
+          <Text italic>{transformTimestamp(value.time_stamp)}</Text>
           <Text>As for now</Text>
           <Rate count={6} value={value.as_for_now} disabled />
           <Text>Potential</Text>
@@ -187,7 +183,7 @@ function RatingInternasional({ value }: { value: any }) {
             icon={<EditOutlined />}
             onClick={() => setOpenForm(true)}
           >
-            Update International Rating
+            Update Rating
           </Button>
         </Space>
       ) : (
@@ -195,24 +191,12 @@ function RatingInternasional({ value }: { value: any }) {
           {loading == false ? (
             <>
               <Space direction="vertical">
+                <Text italic>{transformTimestamp(value.time_stamp)}</Text>
                 <Form
                   form={form}
                   onFinish={onFinishUpdateRating}
                   layout="vertical"
                 >
-                  <Item
-                    name="nama"
-                    label="Nama"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please insert name",
-                      },
-                    ]}
-                    initialValue={value.name}
-                  >
-                    <Input />
-                  </Item>
                   <Item
                     name="rating_as_for_now"
                     label="Rating As for Now"
@@ -245,7 +229,7 @@ function RatingInternasional({ value }: { value: any }) {
                       htmlType="submit"
                       icon={<SendOutlined />}
                     >
-                      Update International Rating
+                      Update rating
                     </Button>
                     <Button
                       danger

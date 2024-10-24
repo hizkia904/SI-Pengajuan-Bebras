@@ -84,7 +84,7 @@ export default function DeadlineClient({
                 icon: tahap <= 2 ? <FileSearchOutlined /> : undefined,
               },
               {
-                title: "Revisi Nasional",
+                title: "Revisi Nasional (oleh Biro)",
                 icon: tahap <= 3 ? <FileSyncOutlined /> : undefined,
               },
               {
@@ -100,7 +100,7 @@ export default function DeadlineClient({
                   ) : undefined,
               },
               {
-                title: "Revisi Internasional",
+                title: "Revisi Internasional (oleh Biro)",
                 icon: tahap <= 6 ? <FileSyncOutlined /> : undefined,
               },
               {

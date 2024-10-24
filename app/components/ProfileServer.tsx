@@ -1,9 +1,9 @@
-import { validateRequest } from "@/app/auth";
-import ErrorResult from "@/app/components/ErrorResult";
-import Profile from "@/app/components/ProfileClient";
-import { runQuery } from "@/app/db";
+import { validateRequest } from "../auth";
+import { runQuery } from "../db";
+import ErrorResult from "./ErrorResult";
+import ProfileClient from "./ProfileClient";
 
-export default async function Page() {
+export default async function ProfileServer() {
   const { user } = await validateRequest();
   const id_user = user?.id;
   let userData: any | null;
@@ -25,7 +25,7 @@ export default async function Page() {
     biro = null;
   }
   return id_user == undefined ? undefined : biro != null && userData != null ? (
-    <Profile biro={biro} userData={userData} id_user={id_user} />
+    <ProfileClient biro={biro} userData={userData} id_user={id_user} />
   ) : (
     <ErrorResult subtitle="Unabled to display user data" />
   );

@@ -12,6 +12,7 @@ import { convertToNull } from "@/utils";
 import { RcFile } from "antd/es/upload";
 import { sha256 } from "js-sha256";
 import { ActionResult, ValuesFormAddTask } from "@/interface";
+import { TransferKey } from "antd/lib/transfer/interface";
 
 export async function logout(): Promise<ActionResult> {
   const { session } = await validateRequest();
@@ -33,8 +34,13 @@ export async function logout(): Promise<ActionResult> {
 }
 
 export async function changeNationalStatus(value: any, id_soal_usulan: string) {
-  const query =
-    "UPDATE soal_usulan set status_nasional=$1 where id_soal_usulan=$2";
+  let query = "";
+  if (value == "ACCEPTED") {
+    query = "UPDATE soal_usulan set status_nasional=$1 where id_soal_usulan=$2";
+  } else if (value == "REJECTED") {
+    query =
+      "UPDATE soal_usulan set status_nasional=$1,gotointernational=false where id_soal_usulan=$2";
+  }
   const res = await runQuery(query, [value, id_soal_usulan]);
   if (res.rowCount == 0) {
     throw new Error();
@@ -401,12 +407,7 @@ export async function addSchedule(values: any) {
       deadline_tahap7,
     ]);
 
-    const query2 =
-      "update soal_usulan set status_nasional='SUBMITTED',status_internasional=NULL";
-
-    const res2 = await client.query(query2, []);
-
-    if (res.rowCount == 0 || res2.rowCount == 0) {
+    if (res.rowCount == 0) {
       throw new Error();
     }
 
@@ -722,10 +723,23 @@ export async function addTask(
 
     await client.query("BEGIN");
 
+    //cari biro dari main author
+    let idUserForMainAuthor = null;
+    for (let i = 0; i < authors.length; i++) {
+      if (authors[i].main == true) {
+        idUserForMainAuthor = authors[i].authors;
+      }
+    }
+    const queryBiroMainAuthor = "select id_biro from user_bebras where id=$1";
+    const getBiroMainAuthor = await client.query(queryBiroMainAuthor, [
+      idUserForMainAuthor,
+    ]);
+    const idBiroMainAuthor = getBiroMainAuthor.rows[0].id_biro;
+
     // tambah add task
     const queryAddTask =
-      "insert into soal_usulan(uploader,who_last_updated,soal,last_updated,tahun,status_nasional) " +
-      "VALUES ($16,$17,ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),now(),$15,'SUBMITTED') returning id_soal_usulan;";
+      "insert into soal_usulan(uploader,who_last_updated,soal,last_updated,tahun,status_nasional,biro) " +
+      "VALUES ($16,$17,ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),now(),$15,'SUBMITTED',$18) returning id_soal_usulan;";
 
     const hasilAddTask = await client.query(queryAddTask, [
       title,
@@ -745,6 +759,7 @@ export async function addTask(
       tahun,
       id_user,
       id_user,
+      idBiroMainAuthor,
     ]);
 
     // tambah kategori
@@ -769,19 +784,28 @@ export async function addTask(
     // tambah pembuat soal
 
     let queryPembuatSoal =
-      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran) VALUES";
+      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran,main) VALUES";
     const arrPembuatSoal = [];
     angka = 1;
     for (let i = 0; i < authors.length; i++) {
       if (i != authors.length - 1) {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2}),`;
+        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2},$${
+          angka + 3
+        }),`;
       } else {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2});`;
+        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2},$${
+          angka + 3
+        });`;
       }
-      angka += 3;
-      arrPembuatSoal.push(authors[i].authors, id_soal_usulan, authors[i].peran);
+      angka += 4;
+      arrPembuatSoal.push(
+        authors[i].authors,
+        id_soal_usulan,
+        authors[i].peran,
+        authors[i].main
+      );
     }
-
+    console.log(arrPembuatSoal);
     await client.query(queryPembuatSoal, arrPembuatSoal);
     // tambah usia dari target soal
 
@@ -863,10 +887,23 @@ export async function updateTask(
 
     await client.query("BEGIN");
 
+    //cari biro dari main author
+    let idUserForMainAuthor = null;
+    for (let i = 0; i < authors.length; i++) {
+      if (authors[i].main == true) {
+        idUserForMainAuthor = authors[i].authors;
+      }
+    }
+    const queryBiroMainAuthor = "select id_biro from user_bebras where id=$1";
+    const getBiroMainAuthor = await client.query(queryBiroMainAuthor, [
+      idUserForMainAuthor,
+    ]);
+    const idBiroMainAuthor = getBiroMainAuthor.rows[0].id_biro;
+
     // tambah add task
     const queryUpdateTask =
       "update soal_usulan " +
-      "set who_last_updated=$15,soal=ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),last_updated=now() " +
+      "set who_last_updated=$15,soal=ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),last_updated=now(),biro=$17 " +
       "where id_soal_usulan=$16";
 
     await client.query(queryUpdateTask, [
@@ -886,6 +923,7 @@ export async function updateTask(
       graphics,
       id_user,
       id_soal_usulan,
+      idBiroMainAuthor,
     ]);
 
     // tambah kategori
@@ -920,17 +958,26 @@ export async function updateTask(
       );
     }
     let queryPembuatSoal =
-      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran) VALUES";
+      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran,main) VALUES";
     const arrPembuatSoal = [];
     angka = 1;
     for (let i = 0; i < authors.length; i++) {
       if (i != authors.length - 1) {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2}),`;
+        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2},$${
+          angka + 3
+        }),`;
       } else {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2});`;
+        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2},$${
+          angka + 3
+        });`;
       }
-      angka += 3;
-      arrPembuatSoal.push(authors[i].authors, id_soal_usulan, authors[i].peran);
+      angka += 4;
+      arrPembuatSoal.push(
+        authors[i].authors,
+        id_soal_usulan,
+        authors[i].peran,
+        authors[i].main
+      );
     }
 
     await client.query(queryPembuatSoal, arrPembuatSoal);
@@ -1443,4 +1490,27 @@ export async function updatePassword(newPass: string, id_user: number) {
 
   const query = "update user_bebras set salt=$1,hashedpassword=$2 where id=$3";
   await runQuery(query, [salt, hashedpassword, id_user]);
+}
+
+export async function AddArchiveToPengajuan(
+  arr_id: React.Key[],
+  toArchive: boolean
+) {
+  for (let i = 0; i < arr_id.length; i++) {
+    let query;
+    if (toArchive == false) {
+      query =
+        "update soal_usulan set status_nasional='ADDED FROM ARCHIVE',archived=false,gotointernational=true where id_soal_usulan=$1";
+    } else {
+      query =
+        "update soal_usulan set status_nasional='ACCEPTED',archived=true,gotointernational=false where id_soal_usulan=$1";
+    }
+    const id_soal_usulan = arr_id[i];
+    if (typeof id_soal_usulan != "bigint") {
+      const res = await runQuery(query, [id_soal_usulan]);
+      if (res.rowCount == 0) {
+        throw new Error();
+      }
+    }
+  }
 }

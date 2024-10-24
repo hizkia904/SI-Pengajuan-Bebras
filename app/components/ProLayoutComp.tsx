@@ -2,7 +2,7 @@
 
 import { routes_admin, routes_biro, routes_tim_nasional } from "../menu";
 
-import { notification, Skeleton } from "antd";
+import { notification, Skeleton, Spin } from "antd";
 import dynamic from "next/dynamic";
 const ProLayout = dynamic(
   () => import("@ant-design/pro-components").then((com) => com.ProLayout),
@@ -24,6 +24,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { logout } from "../actions";
 import { NotificationType } from "@/allType";
+import { SearchOutlined } from "@ant-design/icons";
 
 const { Avatar: SkelAvatar } = Skeleton;
 
@@ -40,15 +41,26 @@ export default function ProLayoutComp({
   role: string | undefined;
 }) {
   const path_now = usePathname();
-
   const initial_state = path_now.startsWith("/tim_nasional/bank_soal")
     ? "/tim_nasional/bank_soal"
-    : path_now.startsWith("/tim_nasional/bebras_task")
-    ? "/tim_nasional/bebras_task"
+    : path_now.startsWith("/tim_nasional/bebras_task/pengajuan")
+    ? "/tim_nasional/bebras_task/pengajuan"
+    : path_now.startsWith("/tim_nasional/bebras_task/archive")
+    ? "/tim_nasional/bebras_task/archive"
+    : path_now.startsWith("/tim_nasional/bebras_task/info")
+    ? "/tim_nasional/bebras_task/info"
+    : path_now.startsWith("/tim_nasional/bebras_task/dashboard")
+    ? "/tim_nasional/bebras_task/dashboard"
     : path_now.startsWith("/tim_nasional/profile")
     ? "/tim_nasional/profile"
-    : path_now.startsWith("/biro/bebras_task")
-    ? "/biro/bebras_task"
+    : path_now.startsWith("/biro/bebras_task/pengajuan")
+    ? "/biro/bebras_task/pengajuan"
+    : path_now.startsWith("/biro/bebras_task/archive")
+    ? "/biro/bebras_task/archive"
+    : path_now.startsWith("/biro/bebras_task/info")
+    ? "/biro/bebras_task/info"
+    : path_now.startsWith("/biro/bebras_task/dashboard")
+    ? "/biro/bebras_task/dashboard"
     : path_now.startsWith("/biro/profile")
     ? "/biro/profile"
     : path_now.startsWith("/admin/categories")
@@ -68,6 +80,17 @@ export default function ProLayoutComp({
       placement: "top",
     });
   };
+
+  // const searchParams = useSearchParams();
+  // const pathNama = usePathname();
+  // const [isPending, setIsPending] = useState(false);
+  // useEffect(() => {
+  //   setIsPending(true);
+  //   return () => {
+  //     console.log("complete");
+  //     setIsPending(false);
+  //   };
+  // }, [pathNama, searchParams]);
 
   return (
     <ProLayout
@@ -93,8 +116,10 @@ export default function ProLayoutComp({
           onClick={() => {
             if (item.path) {
               router.push(item.path);
+              setPathname(item.path.split("?")[0]);
             }
-            setPathname(item.path || "/welcome");
+            console.log(item.path);
+            // setPathname(item.path || "/welcome");
           }}
         >
           {dom}

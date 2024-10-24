@@ -23,12 +23,14 @@ export async function middleware(request: NextRequest) {
   ) {
     if (role) {
       if (role == "BIRO") {
-        return NextResponse.redirect(new URL("/biro/bebras_task", request.url));
+        return NextResponse.redirect(
+          new URL("/biro/bebras_task/pengajuan?p=1", request.url)
+        );
       } else if (role == "ADMIN") {
         return NextResponse.redirect(new URL("/admin/categories", request.url));
       } else if (role == "TIM NASIONAL") {
         return NextResponse.redirect(
-          new URL("/tim_nasional/bebras_task", request.url)
+          new URL("/tim_nasional/bebras_task/pengajuan?p=1", request.url)
         );
       }
     } else {

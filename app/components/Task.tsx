@@ -1,19 +1,12 @@
 import Paragraph from "antd/lib/typography/Paragraph";
 import { runQuery } from "../db";
-import Title from "antd/es/typography/Title";
+
 import Text from "antd/es/typography/Text";
-import { Anchor, Col, Row, Space } from "antd/lib";
+import { Anchor, Col, Row } from "antd/lib";
 import parse from "html-react-parser";
 import transformTimestamp from "@/dateTransform";
-import {
-  BorderOutlined,
-  CheckCircleOutlined,
-  CheckSquareOutlined,
-  CloseCircleOutlined,
-} from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { Descriptions, Divider, Tag } from "antd";
-import { Fragment } from "react";
-import DividerWithID from "./DividerWithID";
 
 export default async function Task({ task_id }: { task_id: string }) {
   //soal

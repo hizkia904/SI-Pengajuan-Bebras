@@ -11,10 +11,16 @@ import {
 
 export const routes_biro = [
   {
-    path: "/biro/bebras_task",
+    // path: "/biro/bebras_task",
     name: "Bebras Task",
     icon: <FontAwesomeIcon icon={faScroll} />,
     component: "bebras_task",
+    children: [
+      { path: "/biro/bebras_task/pengajuan?p=1", name: "Pengajuan" },
+      { path: "/biro/bebras_task/archive?p=1", name: "Archive" },
+      { path: "/biro/bebras_task/dashboard", name: "Dashboard" },
+      { path: "/biro/bebras_task/info", name: "Info" },
+    ],
   },
   {
     path: "/biro/profile",
@@ -26,10 +32,16 @@ export const routes_biro = [
 
 export const routes_tim_nasional = [
   {
-    path: "/tim_nasional/bebras_task",
+    // path: "/tim_nasional/bebras_task",
     name: "Bebras Task",
     icon: <FontAwesomeIcon icon={faScroll} />,
     component: "bebras_task",
+    children: [
+      { path: "/tim_nasional/bebras_task/pengajuan?p=1", name: "Pengajuan" },
+      { path: "/tim_nasional/bebras_task/archive?p=1", name: "Archive" },
+      { path: "/tim_nasional/bebras_task/dashboard", name: "Dashboard" },
+      { path: "/tim_nasional/bebras_task/info", name: "Info" },
+    ],
   },
   {
     path: "/tim_nasional/bank_soal",

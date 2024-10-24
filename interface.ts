@@ -14,7 +14,7 @@ export interface ValuesFormAddTask {
   graphics: string | undefined;
   answer_type: string;
   categories: number[];
-  authors_peran: [{ authors: number; peran: string }];
+  authors_peran: [{ authors: number; peran: string; main: boolean }];
   age_diff: [{ age: number; diff: string }];
   imagePaths: imagePath[];
 }
@@ -119,4 +119,28 @@ export interface BebrasTask {
 export interface Authors {
   id_user: number;
   peran: string;
+}
+
+export interface DashboardData {
+  tahun: number;
+  nasionalaccepted: number;
+  nasionalrejected: number;
+  gotointernational: number;
+  internationalaccepted: number;
+  internationalheldback: number;
+  internationalworkneeded: number;
+  totalsoalterkumpul: number;
+  partisipasibiro: number;
+}
+
+export interface Grafik {
+  tahun: number[];
+  nasionalaccepted: number[];
+  nasionalrejected: number[];
+  gotointernational: number[];
+  internationalaccepted: number[];
+  internationalheldback: number[];
+  internationalworkNeeded: number[];
+  totalsoalterkumpul: number[];
+  partisipasibiro: number[];
 }
