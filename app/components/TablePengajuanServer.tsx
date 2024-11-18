@@ -19,6 +19,7 @@ export default async function TablePengajuanServer({
         total={0}
         role="BIRO"
         tahap_sekarang={1}
+        ketua={false}
       />
     );
   }
@@ -30,6 +31,7 @@ export default async function TablePengajuanServer({
 
   const role = user.role;
   const id_user = user.id;
+  const ketua = user.ketua;
   const { p, a, s, biro_uploader, stat_nas, go_inter, stat_inter, t } =
     searchParams;
   let counter = 1;
@@ -74,7 +76,7 @@ export default async function TablePengajuanServer({
     "inner join pembuat_soal_usulan p on " +
     "p.id_soal_usulan = s.id_soal_usulan ";
 
-  const additionCondition = ` and p.id_user=$${counter} `;
+  const additionCondition = ` and (p.id_user=$${counter} or s.uploader=$${counter}) `;
   try {
     let offset: number;
 
@@ -89,7 +91,7 @@ export default async function TablePengajuanServer({
     }
 
     let queryTotal =
-      "select count(s.id_soal_usulan) as total" +
+      "select count( distinct s.id_soal_usulan) as total" +
       " from soal_usulan s " +
       "inner join user_bebras u on s.uploader = u.id " +
       "inner join user_bebras w on s.who_last_updated = w.id " +
@@ -108,7 +110,7 @@ export default async function TablePengajuanServer({
     total = totalRows[0].total;
 
     const queryData =
-      "select s.id_soal_usulan as key,u.nama as uploader,bu.nama as biro_uploader,bw.nama as biro_last_updated,w.nama as who_last_updated,(soal).task_title,(soal).answer_type,tahun," +
+      "select distinct on(s.id_soal_usulan) s.id_soal_usulan as key,u.nama as uploader,bu.nama as biro_uploader,bw.nama as biro_last_updated,w.nama as who_last_updated,(soal).task_title,(soal).answer_type,tahun," +
       "status_nasional,gotointernational,status_internasional,last_updated" +
       " from soal_usulan s " +
       "inner join user_bebras u on s.uploader = u.id " +
@@ -156,7 +158,6 @@ export default async function TablePengajuanServer({
       role == "BIRO" ? [...arr, id_user, offset] : [...arr, offset]
     );
     rating = getRataRating.rows;
-    console.log(rating);
     rating = rating.reduce((acc, row) => {
       acc[row.id_soal_usulan] = row;
       return acc;
@@ -170,7 +171,6 @@ export default async function TablePengajuanServer({
     const getTahapSekarang = await runQuery(queryTahapSekarang, []);
     tahap_sekarang = getTahapSekarang.rows[0].tahap_sekarang;
   } catch (e) {
-    console.log(e);
     dataSource = null;
     rating = null;
     total = null;
@@ -192,6 +192,7 @@ export default async function TablePengajuanServer({
           total={total}
           role={role}
           tahap_sekarang={tahap_sekarang}
+          ketua={ketua}
         />
       ) : (
         <ErrorResult subtitle="Unabled to load table of task" />

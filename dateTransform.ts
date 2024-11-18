@@ -18,9 +18,3 @@ export default function transformTimestamp(timestamp: string | Date): string {
 
   return formattedDate;
 }
-
-// // Example usage
-// const timestamp = "2024-07-11T09:15:00Z"; // UTC timestamp
-// const timeZone = "America/New_York"; // Your time zone
-// const readableDate = transformTimestamp(timestamp, timeZone);
-// console.log(readableDate); // Output: "Thursday 11 July 2024 09:15:00" (in New York time zone)

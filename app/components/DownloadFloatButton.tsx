@@ -1,27 +1,19 @@
 "use client";
 
-import { LoadingOutlined } from "@ant-design/icons";
+import { ArrowDownOutlined, LoadingOutlined } from "@ant-design/icons";
 import { FloatButton, Tooltip } from "antd";
-import { CSSProperties, ReactNode, useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { downloadUsingPandoc, getImage } from "../actions";
 import { MyContext } from "./ProLayoutComp";
 import JSZip from "jszip";
 import FileSaver from "file-saver";
 
 export default function DownloadFloatButton({
-  icon,
-  typeDownload,
   id_soal_usulan,
   title,
-  style,
-  tooltip,
 }: {
-  icon: ReactNode;
-  typeDownload: "image" | "file";
   id_soal_usulan: string;
   title: string;
-  style: CSSProperties;
-  tooltip: string;
 }) {
   const [loading, setLoading] = useState(false);
 
@@ -29,48 +21,29 @@ export default function DownloadFloatButton({
 
   const handleClick = async () => {
     setLoading(true);
-    if (typeDownload == "image") {
-      await onClickImageDownload();
-    } else {
-      await onClickFileDownload();
-    }
+    await onClickDownloadImageAndFile();
     setLoading(false);
   };
 
-  const onClickImageDownload = async () => {
+  const onClickDownloadImageAndFile = async () => {
     try {
       const imagePath = await getImage(id_soal_usulan);
-      if (imagePath.length == 0) {
-        if (openNotification) {
-          openNotification("error", "No Image to be downloaded!");
-        }
-      } else {
-        const zip = new JSZip();
+      const arrBuff = await downloadUsingPandoc(id_soal_usulan);
+      const buff = Buffer.from(arrBuff);
+      const blob2 = new Blob([buff]);
+      const zip = new JSZip();
+      zip.file(title + ".odt", blob2, { base64: true });
+      if (imagePath.length != 0) {
         const graphics = zip.folder("graphics");
         for (let i = 0; i < imagePath.length; i++) {
           graphics?.file(imagePath[i].file_name, imagePath[i].path, {
             base64: true,
           });
         }
-        const blob = await zip.generateAsync({ type: "blob" });
-        FileSaver.saveAs(blob, `${title}.zip`);
-        if (openNotification) {
-          openNotification("success", "Download Successfull!");
-        }
       }
-    } catch (e) {
-      if (openNotification) {
-        openNotification("error", "Download Failed!");
-      }
-    }
-  };
 
-  const onClickFileDownload = async () => {
-    try {
-      const arrBuff = await downloadUsingPandoc(id_soal_usulan);
-      const buff = Buffer.from(arrBuff);
-      const blob = new Blob([buff]);
-      FileSaver.saveAs(blob, `${title}.odt`);
+      const blob = await zip.generateAsync({ type: "blob" });
+      FileSaver.saveAs(blob, `${title}.zip`);
       if (openNotification) {
         openNotification("success", "Download Successfull!");
       }
@@ -81,10 +54,16 @@ export default function DownloadFloatButton({
     }
   };
   return (
-    <Tooltip title={tooltip}>
+    <Tooltip title="Download">
       <FloatButton
-        style={style}
-        icon={loading == true ? <LoadingOutlined spin={false} /> : icon}
+        style={{ insetInlineEnd: 74 }}
+        icon={
+          loading == true ? (
+            <LoadingOutlined spin={false} />
+          ) : (
+            <ArrowDownOutlined style={{ color: "#323ea8" }} />
+          )
+        }
         onClick={loading == false ? handleClick : undefined}
       />
     </Tooltip>

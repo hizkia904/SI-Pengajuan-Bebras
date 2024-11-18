@@ -15,7 +15,7 @@ export default async function StatusServer({
     return <p>....</p>;
   }
   const role = user.role;
-
+  const ketua = user.ketua;
   let status: any;
   let tahap_sekarang: number | null;
   try {
@@ -39,6 +39,7 @@ export default async function StatusServer({
       id_soal_usulan={id_soal_usulan}
       tujuan={tujuan}
       tahap_sekarang={tahap_sekarang}
+      ketua={ketua}
     />
   ) : (
     <ErrorResult subtitle="Unabled to display status" />

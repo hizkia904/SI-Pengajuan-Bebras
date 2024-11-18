@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingOutlined, SendOutlined } from "@ant-design/icons";
-import { Button, DatePicker, Form, notification, Spin } from "antd";
+import { Button, DatePicker, Form, notification, Spin, Typography } from "antd";
 import { useContext, useEffect, useState } from "react";
 import { addSchedule } from "../actions";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,9 @@ import dayjs from "dayjs";
 import "dayjs/locale/id";
 import { MyContext } from "./ProLayoutComp";
 import { useForm } from "antd/lib/form/Form";
+import locale from "antd/es/date-picker/locale/id_ID";
 const { Item } = Form;
+const { Title } = Typography;
 export default function Persiapan({
   tahap_sekarang,
 }: {
@@ -46,12 +48,12 @@ export default function Persiapan({
         transformValues.deadline_tahap7.toDate();
       transformValues.deadline_tahap7.setSeconds(0);
       await addSchedule(transformValues);
-      router.refresh();
+      window.location.href = "/tim_nasional/bebras_task/pengajuan?p=1";
       if (openNotification) {
         openNotification("success", "Successfully add schedule");
       }
     } catch (e) {
-      router.refresh();
+      // router.refresh();
       if (openNotification) {
         openNotification("error", "Failed to add schedule");
       }
@@ -110,6 +112,7 @@ export default function Persiapan({
 
   return (
     <>
+      <Title level={3}>Jadwal</Title>
       {loading == true ? (
         <Spin indicator={<LoadingOutlined spin />} />
       ) : (
@@ -125,6 +128,10 @@ export default function Persiapan({
             ]}
           >
             <DatePicker
+              locale={{
+                ...locale,
+                lang: { ...locale.lang, ok: "OK" },
+              }}
               showTime
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
@@ -167,6 +174,10 @@ export default function Persiapan({
             ]}
           >
             <DatePicker
+              locale={{
+                ...locale,
+                lang: { ...locale.lang, ok: "OK" },
+              }}
               showTime
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
@@ -228,6 +239,10 @@ export default function Persiapan({
             ]}
           >
             <DatePicker
+              locale={{
+                ...locale,
+                lang: { ...locale.lang, ok: "OK" },
+              }}
               showTime
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
@@ -289,6 +304,10 @@ export default function Persiapan({
             ]}
           >
             <DatePicker
+              locale={{
+                ...locale,
+                lang: { ...locale.lang, ok: "OK" },
+              }}
               showTime
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
@@ -350,6 +369,10 @@ export default function Persiapan({
             ]}
           >
             <DatePicker
+              locale={{
+                ...locale,
+                lang: { ...locale.lang, ok: "OK" },
+              }}
               showTime
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
@@ -411,6 +434,10 @@ export default function Persiapan({
             ]}
           >
             <DatePicker
+              locale={{
+                ...locale,
+                lang: { ...locale.lang, ok: "OK" },
+              }}
               showTime
               showSecond={false}
               format="DD-MM-YYYY HH:mm"
@@ -472,6 +499,10 @@ export default function Persiapan({
             ]}
           >
             <DatePicker
+              locale={{
+                ...locale,
+                lang: { ...locale.lang, ok: "OK" },
+              }}
               showTime
               showSecond={false}
               format="DD-MM-YYYY HH:mm"

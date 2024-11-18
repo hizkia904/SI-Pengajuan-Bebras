@@ -29,6 +29,7 @@ import CustomizeSelect from "./CustomizeSelect";
 
 import transformTimestamp from "@/dateTransform";
 import {
+  ArrowDownOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   FileImageOutlined,
@@ -55,6 +56,7 @@ export function TablePengajuanClient({
   biro,
   role,
   tahap_sekarang,
+  ketua,
 }: {
   dataSource: TableRows[];
   rating: any[];
@@ -62,6 +64,7 @@ export function TablePengajuanClient({
   biro: any[];
   role: string;
   tahap_sekarang: number;
+  ketua: boolean;
 }) {
   const router = useRouter();
 
@@ -166,7 +169,7 @@ export function TablePengajuanClient({
       key: "status_nasional",
       align: "center",
       render(value, record, index) {
-        if (role == "BIRO") {
+        if (role == "BIRO" || (role == "TIM NASIONAL" && ketua == false)) {
           if (value == "ACCEPTED") {
             return <Tag color="success">{value}</Tag>;
           } else if (value == "REJECTED") {
@@ -176,7 +179,7 @@ export function TablePengajuanClient({
           } else {
             return <Tag color="default">{value}</Tag>;
           }
-        } else if (role == "TIM NASIONAL") {
+        } else if (role == "TIM NASIONAL" && ketua == true) {
           if (tahap_sekarang >= 5) {
             if (value == "ACCEPTED") {
               return <Tag color="success">{value}</Tag>;
@@ -235,13 +238,13 @@ export function TablePengajuanClient({
       key: "gotointernational",
       align: "center",
       render(value, record, index) {
-        if (role == "BIRO") {
+        if (role == "BIRO" || (role == "TIM NASIONAL" && ketua == false)) {
           if (value == true) {
             return <CheckCircleOutlined style={{ color: "green" }} />;
           } else {
             return <CloseCircleOutlined style={{ color: "red" }} />;
           }
-        } else {
+        } else if (role == "TIM NASIONAL" && ketua == true) {
           if (
             tahap_sekarang >= 5 ||
             record.status_nasional == "ADDED FROM ARCHIVE"
@@ -295,7 +298,7 @@ export function TablePengajuanClient({
       key: "status_internasional",
       align: "center",
       render(value: any, record: TableRows, index: number) {
-        if (role == "BIRO") {
+        if (role == "BIRO" || (role == "TIM NASIONAL" && ketua == false)) {
           if (value == null) {
             return <Tag color="cyan">-</Tag>;
           } else if (value == "ACCEPTED") {
@@ -307,7 +310,7 @@ export function TablePengajuanClient({
           } else {
             return <Tag color="default">{value}</Tag>;
           }
-        } else if (role == "TIM NASIONAL") {
+        } else if (role == "TIM NASIONAL" && ketua == true) {
           if (
             value == "WAITING FOR RESULT" ||
             value == "ACCEPTED" ||
@@ -368,7 +371,7 @@ export function TablePengajuanClient({
       render(value, record, index) {
         return (
           <>
-            <ButtonWithLoading
+            {/* <ButtonWithLoading
               icon={<FileOutlined style={{ color: "#323ea8" }} />}
               type="text"
               onClick={async () => {
@@ -386,9 +389,9 @@ export function TablePengajuanClient({
                   }
                 }
               }}
-            />
+            /> */}
 
-            <ButtonWithLoading
+            {/* <ButtonWithLoading
               icon={<FileImageOutlined style={{ color: "#323ea8" }} />}
               type="text"
               onClick={async () => {
@@ -415,6 +418,42 @@ export function TablePengajuanClient({
                     if (openNotification) {
                       openNotification("success", "Download Successfull!");
                     }
+                  }
+                } catch (e) {
+                  if (openNotification) {
+                    openNotification("error", "Download Failed!");
+                  }
+                }
+              }}
+            /> */}
+            <ButtonWithLoading
+              type="text"
+              icon={<ArrowDownOutlined style={{ color: "#323ea8" }} />}
+              onClick={async () => {
+                try {
+                  const imagePath = await getImage(record.key);
+                  const arrBuff = await downloadUsingPandoc(record.key);
+                  const buff = Buffer.from(arrBuff);
+                  const blob2 = new Blob([buff]);
+                  const zip = new JSZip();
+                  zip.file(record.task_title + ".odt", blob2, { base64: true });
+                  if (imagePath.length != 0) {
+                    const graphics = zip.folder("graphics");
+                    for (let i = 0; i < imagePath.length; i++) {
+                      graphics?.file(
+                        imagePath[i].file_name,
+                        imagePath[i].path,
+                        {
+                          base64: true,
+                        }
+                      );
+                    }
+                  }
+
+                  const blob = await zip.generateAsync({ type: "blob" });
+                  FileSaver.saveAs(blob, `${record.task_title}.zip`);
+                  if (openNotification) {
+                    openNotification("success", "Download Successfull!");
                   }
                 } catch (e) {
                   if (openNotification) {
@@ -493,7 +532,6 @@ export function TablePengajuanClient({
                 options={biro}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value) {
                     params.set("biro_uploader", value);
@@ -525,7 +563,6 @@ export function TablePengajuanClient({
                 ]}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value) {
                     params.set("a", value);
@@ -563,7 +600,6 @@ export function TablePengajuanClient({
                 ]}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value) {
                     params.set("stat_nas", value);
@@ -609,7 +645,6 @@ export function TablePengajuanClient({
                 ]}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value) {
                     params.set("stat_inter", value);
@@ -654,7 +689,6 @@ export function TablePengajuanClient({
                 ]}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value != null) {
                     params.set("go_inter", value);
@@ -681,7 +715,6 @@ export function TablePengajuanClient({
                 ) => {
                   const tahun = date?.year();
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (tahun) {
                     params.set("t", tahun + "");
@@ -703,7 +736,6 @@ export function TablePengajuanClient({
           icon={<ReloadOutlined />}
           onClick={() => {
             const params = new URLSearchParams(searchParams.toString());
-            console.log(params.toString());
             params.set("p", "1");
             params.delete("a");
             params.delete("s");
@@ -728,11 +760,11 @@ export function TablePengajuanClient({
         </Button>
         <Table
           pagination={{
+            showSizeChanger: false,
             total: total,
             current: Number(p),
             onChange(page, pageSize) {
               const params = new URLSearchParams(searchParams.toString());
-              console.log(params.toString());
               params.set("p", page + "");
               const params_string = params.toString();
               router.push(pathname + "?" + params_string);

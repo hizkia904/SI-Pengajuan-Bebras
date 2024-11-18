@@ -12,6 +12,7 @@ import {
   Divider,
   Spin,
   Tooltip,
+  Alert,
 } from "antd";
 
 import { Form, Select } from "antd";
@@ -39,7 +40,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 
 const { Item, List } = Form;
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 export default function FormAddTask({
   categories,
   age,
@@ -115,17 +116,21 @@ export default function FormAddTask({
     setLoading(true);
     try {
       values.imagePaths = arrImage;
-      await addTask(values, id_user);
+      if (roleUser) {
+        await addTask(values, id_user, roleUser);
+      }
       if (roleUser == "BIRO") {
         window.location.href = "/biro/bebras_task/pengajuan?p=1";
       } else if (roleUser == "TIM NASIONAL") {
         window.location.href = "/tim_nasional/bebras_task/pengajuan?p=1";
       }
     } catch (err) {
-      if (openNotification) {
-        openNotification("error", "Failed to Add Task");
+      if (err instanceof Error) {
+        if (openNotification) {
+          openNotification("error", err.message);
+        }
+        setLoading(false);
       }
-      setLoading(false);
     }
   };
   const router = useRouter();
@@ -657,7 +662,7 @@ export default function FormAddTask({
               <List
                 initialValue={
                   chosenAuthors == undefined
-                    ? [{ authors: null, peran: null, main: false }]
+                    ? [{ authors: null, peran: null }]
                     : chosenAuthors
                 }
                 name="authors_peran"
@@ -669,20 +674,7 @@ export default function FormAddTask({
                           new Error("Please fill at least 1 authors")
                         );
                       } else {
-                        let haveOneMainAuthor = false;
-                        for (let i = 0; i < names.length; i++) {
-                          if (names[i]?.main == true) {
-                            haveOneMainAuthor = true;
-                            break;
-                          }
-                        }
-                        if (haveOneMainAuthor == true) {
-                          return Promise.resolve();
-                        } else {
-                          return Promise.reject(
-                            new Error("Authors should have one main author")
-                          );
-                        }
+                        return Promise.resolve();
                       }
                     },
                   },
@@ -713,38 +705,7 @@ export default function FormAddTask({
                         return (
                           <Fragment key={key}>
                             <Row gutter={5}>
-                              <Col span={3}>
-                                <Item
-                                  {...restField}
-                                  name={[name, "main"]}
-                                  valuePropName="checked"
-                                  initialValue={false}
-                                >
-                                  <Checkbox
-                                    onChange={(e) => {
-                                      const valueNow =
-                                        form.getFieldValue("authors_peran");
-
-                                      for (
-                                        let i = 0;
-                                        i < valueNow.length;
-                                        i++
-                                      ) {
-                                        if (i != index) {
-                                          valueNow[i].main = false;
-                                        }
-                                      }
-                                      form.setFieldValue(
-                                        "authors_peran",
-                                        valueNow
-                                      );
-                                    }}
-                                  >
-                                    Main Author
-                                  </Checkbox>
-                                </Item>
-                              </Col>
-                              <Col span={10}>
+                              <Col span={12}>
                                 <Item
                                   dependencies={dependencies}
                                   {...restField}
@@ -811,7 +772,7 @@ export default function FormAddTask({
                                   />
                                 </Item>
                               </Col>
-                              <Col span={10}>
+                              <Col span={11}>
                                 <Form.Item
                                   {...restField}
                                   name={[name, "peran"]}
@@ -863,7 +824,7 @@ export default function FormAddTask({
                 type="primary"
                 icon={<SendOutlined />}
                 style={
-                  editedValue != undefined ? { insetInlineEnd: 174 } : undefined
+                  editedValue != undefined ? { insetInlineEnd: 124 } : undefined
                 }
               />
             </Tooltip>

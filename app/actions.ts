@@ -477,37 +477,37 @@ export async function addSchedule(values: any) {
 
     //pastiin waktu run deadline tahap1
     await client.query(
-      "update pgagent.pga_job set jobnextrun=$1 where jobid=1",
+      "update pgagent.pga_job set jobenabled=true,jobnextrun=$1 where jobid=1",
       [deadline_tahap1]
     );
     //pastiin waktu run deadline tahap2
     await client.query(
-      "update pgagent.pga_job set jobnextrun=$1 where jobid=2",
+      "update pgagent.pga_job set jobenabled=true,jobnextrun=$1 where jobid=2",
       [deadline_tahap2]
     );
     //pastiin waktu run deadline tahap3
     await client.query(
-      "update pgagent.pga_job set jobnextrun=$1 where jobid=3",
+      "update pgagent.pga_job set jobenabled=true,jobnextrun=$1 where jobid=3",
       [deadline_tahap3]
     );
     //pastiin waktu run deadline tahap4
     await client.query(
-      "update pgagent.pga_job set jobnextrun=$1 where jobid=4",
+      "update pgagent.pga_job set jobenabled=true,jobnextrun=$1 where jobid=4",
       [deadline_tahap4]
     );
     //pastiin waktu run deadline tahap5
     await client.query(
-      "update pgagent.pga_job set jobnextrun=$1 where jobid=5",
+      "update pgagent.pga_job set jobenabled=true,jobnextrun=$1 where jobid=5",
       [deadline_tahap5]
     );
     //pastiin waktu run deadline tahap6
     await client.query(
-      "update pgagent.pga_job set jobnextrun=$1 where jobid=6",
+      "update pgagent.pga_job set jobenabled=true,jobnextrun=$1 where jobid=6",
       [deadline_tahap6]
     );
     //pastiin waktu run deadline tahap7
     await client.query(
-      "update pgagent.pga_job set jobnextrun=$1 where jobid=7",
+      "update pgagent.pga_job set jobenabled=true,jobnextrun=$1 where jobid=7",
       [deadline_tahap7]
     );
 
@@ -570,8 +570,7 @@ export async function login(values: any) {
 }
 
 export async function signup(values: any): Promise<ActionResult> {
-  const { username, password, retype_password, nama, email, biro, role } =
-    values;
+  const { username, password, retype_password, nama, email, biro } = values;
   // const username = formData.get("username");
   // username must be between 4 ~ 31 characters, and only consists of lowercase letters, 0-9, -, and _
   // keep in mind some database (e.g. mysql) are case insensitive
@@ -634,12 +633,11 @@ export async function signup(values: any): Promise<ActionResult> {
   // TODO: check if username is already used
   const query =
     "INSERT INTO user_bebras (username,salt,nama,role,email,hashedpassword,id_biro)";
-  const query2 = " VALUES ($1,$2,$3,$4,$5,$6,$7) returning id";
+  const query2 = " VALUES ($1,$2,$3,'BIRO',$4,$5,$6) returning id";
   const res = await runQuery(query + query2, [
     username,
     salt,
     nama,
-    role,
     email,
     passwordHash,
     biro,
@@ -693,8 +691,45 @@ export async function changeRatingNasional(newRate: number, kode_soal: string) {
 
 export async function addTask(
   values: ValuesFormAddTask,
-  id_user: number | undefined
+  id_user: number | undefined,
+  role: string
 ): Promise<void> {
+  let tahapSekarang: number = -1;
+  try {
+    //pastiin tahapnya sesuai
+    const getTahapSekarang = await runQuery(
+      "select tahap_sekarang from info_bebras",
+      []
+    );
+    tahapSekarang = getTahapSekarang.rows[0].tahap_sekarang;
+
+    if (role == "BIRO") {
+      if (tahapSekarang != 1) {
+        const error = new Error(
+          "You can't add task because the period of submitting task is over"
+        );
+        error.name = "tahap";
+        throw error;
+      }
+    } else if (role == "TIM NASIONAL") {
+      if (tahapSekarang > 4) {
+        const error = new Error(
+          "You can't add task because the period of submitting task is over"
+        );
+        error.name = "tahap";
+        throw error;
+      }
+    }
+  } catch (e) {
+    if (e instanceof Error) {
+      if (e.name == "tahap") {
+        throw e;
+      } else {
+        throw new Error("Unabled to add task");
+      }
+    }
+  }
+
   const client = await getClient();
   try {
     const title = values.title;
@@ -723,23 +758,10 @@ export async function addTask(
 
     await client.query("BEGIN");
 
-    //cari biro dari main author
-    let idUserForMainAuthor = null;
-    for (let i = 0; i < authors.length; i++) {
-      if (authors[i].main == true) {
-        idUserForMainAuthor = authors[i].authors;
-      }
-    }
-    const queryBiroMainAuthor = "select id_biro from user_bebras where id=$1";
-    const getBiroMainAuthor = await client.query(queryBiroMainAuthor, [
-      idUserForMainAuthor,
-    ]);
-    const idBiroMainAuthor = getBiroMainAuthor.rows[0].id_biro;
-
     // tambah add task
     const queryAddTask =
-      "insert into soal_usulan(uploader,who_last_updated,soal,last_updated,tahun,status_nasional,biro) " +
-      "VALUES ($16,$17,ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),now(),$15,'SUBMITTED',$18) returning id_soal_usulan;";
+      "insert into soal_usulan(uploader,who_last_updated,soal,last_updated,tahun,status_nasional) " +
+      "VALUES ($16,$17,ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),now(),$15,$18) returning id_soal_usulan;";
 
     const hasilAddTask = await client.query(queryAddTask, [
       title,
@@ -759,7 +781,19 @@ export async function addTask(
       tahun,
       id_user,
       id_user,
-      idBiroMainAuthor,
+      role == "BIRO"
+        ? tahapSekarang == 1
+          ? "SUBMITTED"
+          : ""
+        : tahapSekarang == 1
+        ? "SUBMITTED"
+        : tahapSekarang == 2
+        ? "IN REVIEW"
+        : tahapSekarang == 3
+        ? "IN REVISE"
+        : tahapSekarang == 4
+        ? "FILTERING"
+        : "",
     ]);
 
     // tambah kategori
@@ -784,28 +818,18 @@ export async function addTask(
     // tambah pembuat soal
 
     let queryPembuatSoal =
-      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran,main) VALUES";
+      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran) VALUES";
     const arrPembuatSoal = [];
     angka = 1;
     for (let i = 0; i < authors.length; i++) {
       if (i != authors.length - 1) {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2},$${
-          angka + 3
-        }),`;
+        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2}),`;
       } else {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2},$${
-          angka + 3
-        });`;
+        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2});`;
       }
-      angka += 4;
-      arrPembuatSoal.push(
-        authors[i].authors,
-        id_soal_usulan,
-        authors[i].peran,
-        authors[i].main
-      );
+      angka += 3;
+      arrPembuatSoal.push(authors[i].authors, id_soal_usulan, authors[i].peran);
     }
-    console.log(arrPembuatSoal);
     await client.query(queryPembuatSoal, arrPembuatSoal);
     // tambah usia dari target soal
 
@@ -851,7 +875,7 @@ export async function addTask(
     await client.query("ROLLBACK");
     client.release();
 
-    throw e;
+    throw new Error("Unabled to add task");
   }
 }
 
@@ -887,23 +911,10 @@ export async function updateTask(
 
     await client.query("BEGIN");
 
-    //cari biro dari main author
-    let idUserForMainAuthor = null;
-    for (let i = 0; i < authors.length; i++) {
-      if (authors[i].main == true) {
-        idUserForMainAuthor = authors[i].authors;
-      }
-    }
-    const queryBiroMainAuthor = "select id_biro from user_bebras where id=$1";
-    const getBiroMainAuthor = await client.query(queryBiroMainAuthor, [
-      idUserForMainAuthor,
-    ]);
-    const idBiroMainAuthor = getBiroMainAuthor.rows[0].id_biro;
-
     // tambah add task
     const queryUpdateTask =
       "update soal_usulan " +
-      "set who_last_updated=$15,soal=ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),last_updated=now(),biro=$17 " +
+      "set who_last_updated=$15,soal=ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),last_updated=now() " +
       "where id_soal_usulan=$16";
 
     await client.query(queryUpdateTask, [
@@ -923,7 +934,6 @@ export async function updateTask(
       graphics,
       id_user,
       id_soal_usulan,
-      idBiroMainAuthor,
     ]);
 
     // tambah kategori
@@ -958,29 +968,21 @@ export async function updateTask(
       );
     }
     let queryPembuatSoal =
-      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran,main) VALUES";
+      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran) VALUES";
     const arrPembuatSoal = [];
     angka = 1;
     for (let i = 0; i < authors.length; i++) {
       if (i != authors.length - 1) {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2},$${
-          angka + 3
-        }),`;
+        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2}),`;
       } else {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2},$${
-          angka + 3
-        });`;
+        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2});`;
       }
-      angka += 4;
-      arrPembuatSoal.push(
-        authors[i].authors,
-        id_soal_usulan,
-        authors[i].peran,
-        authors[i].main
-      );
+      angka += 3;
+      arrPembuatSoal.push(authors[i].authors, id_soal_usulan, authors[i].peran);
     }
 
     await client.query(queryPembuatSoal, arrPembuatSoal);
+
     // tambah usia dari target soal
     if (id_soal_usulan) {
       await client.query(
@@ -1424,6 +1426,16 @@ export async function updateNegara(kode_negara: string, newName: string) {
   await runQuery(query, [newName, kode_negara]);
 }
 
+export async function addBiro(biroName: string) {
+  const query = "insert into biro(nama) VALUES ($1)";
+  await runQuery(query, [biroName]);
+}
+
+export async function updateBiro(id_biro: number, newName: string) {
+  const query = "update biro set nama=$1 where id_biro=$2";
+  await runQuery(query, [newName, id_biro]);
+}
+
 export async function checkKodeNegara(kode_negara: string) {
   const query = "SELECT EXISTS(SELECT 1 FROM negara WHERE kode_negara = $1)";
   const res = await runQuery(query, [kode_negara]);
@@ -1467,6 +1479,22 @@ export async function changeBiro(id_biro: number, id_user: number) {
   }
 }
 
+export async function changeRole(id: number, newRole: string) {
+  const query = "update user_bebras set role=$1 where id=$2";
+  const res = await runQuery(query, [newRole, id]);
+  if (res.rowCount == 0) {
+    throw new Error();
+  }
+}
+
+export async function changeKetua(id: number, ketua: boolean) {
+  const query = "update user_bebras set ketua=$1 where id=$2";
+  const res = await runQuery(query, [ketua, id]);
+  if (res.rowCount == 0) {
+    throw new Error();
+  }
+}
+
 export async function checkPassword(pass: string, id_user: number) {
   if (pass.length < 5 || pass.length > 10) {
     return false;
@@ -1493,24 +1521,118 @@ export async function updatePassword(newPass: string, id_user: number) {
 }
 
 export async function AddArchiveToPengajuan(
-  arr_id: React.Key[],
+  arr_id: number[],
   toArchive: boolean
 ) {
-  for (let i = 0; i < arr_id.length; i++) {
-    let query;
-    if (toArchive == false) {
-      query =
-        "update soal_usulan set status_nasional='ADDED FROM ARCHIVE',archived=false,gotointernational=true where id_soal_usulan=$1";
-    } else {
-      query =
-        "update soal_usulan set status_nasional='ACCEPTED',archived=true,gotointernational=false where id_soal_usulan=$1";
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+    const getTahap = await client.query(
+      "select tahap_sekarang from info_bebras",
+      []
+    );
+    const tahapSeKarang = getTahap.rows[0].tahap_sekarang;
+    if (tahapSeKarang != 4) {
+      const error = new Error(
+        "You can't add or remove task because the period is over"
+      );
+      error.name = "tahap";
+      throw error;
     }
-    const id_soal_usulan = arr_id[i];
-    if (typeof id_soal_usulan != "bigint") {
-      const res = await runQuery(query, [id_soal_usulan]);
+    for (let i = 0; i < arr_id.length; i++) {
+      let query;
+      if (toArchive == false) {
+        query =
+          "update soal_usulan set status_nasional='ADDED FROM ARCHIVE',archived=false,gotointernational=true where id_soal_usulan=$1";
+      } else {
+        query =
+          "update soal_usulan set status_nasional='ACCEPTED',archived=true,gotointernational=false where id_soal_usulan=$1";
+      }
+      const id_soal_usulan = arr_id[i];
+      const res = await client.query(query, [id_soal_usulan]);
       if (res.rowCount == 0) {
-        throw new Error();
+        const error = new Error("The task doesn't exist");
+        error.name = "not exist";
+        throw error;
       }
     }
+
+    await client.query("COMMIT");
+    client.release();
+  } catch (e) {
+    await client.query("ROLLBACK");
+    client.release();
+    if (e instanceof Error) {
+      if (e.name == "tahap") {
+        throw e;
+      } else if (e.name == "not exist") {
+        throw e;
+      } else {
+        throw new Error("Unabled to add task");
+      }
+    }
+  }
+}
+
+export async function moveToNextPhase() {
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+    const getTahap = await client.query(
+      "select tahap_sekarang from info_bebras",
+      []
+    );
+    const tahap = getTahap.rows[0].tahap_sekarang;
+    let query1 = "";
+    let query2 = "";
+    if (tahap == 1) {
+      query1 =
+        "update pgagent.pga_job set jobenabled=false where jobname='TO_PHASE2'";
+      query2 =
+        "select jstcode from pgagent.pga_jobstep where jstname='STEP_TO_PHASE2'";
+    } else if (tahap == 2) {
+      query1 =
+        "update pgagent.pga_job set jobenabled=false where jobname='TO_PHASE3'";
+      query2 =
+        "select jstcode from pgagent.pga_jobstep where jstname='STEP_TO_PHASE3'";
+    } else if (tahap == 3) {
+      query1 =
+        "update pgagent.pga_job set jobenabled=false where jobname='TO_PHASE4'";
+      query2 =
+        "select jstcode from pgagent.pga_jobstep where jstname='STEP_TO_PHASE4'";
+    } else if (tahap == 4) {
+      query1 =
+        "update pgagent.pga_job set jobenabled=false where jobname='TO_PHASE5'";
+      query2 =
+        "select jstcode from pgagent.pga_jobstep where jstname='STEP_TO_PHASE5'";
+    } else if (tahap == 5) {
+      query1 =
+        "update pgagent.pga_job set jobenabled=false where jobname='TO_PHASE6'";
+      query2 =
+        "select jstcode from pgagent.pga_jobstep where jstname='STEP_TO_PHASE6'";
+    } else if (tahap == 6) {
+      query1 =
+        "update pgagent.pga_job set jobenabled=false where jobname='TO_PHASE7'";
+      query2 =
+        "select jstcode from pgagent.pga_jobstep where jstname='STEP_TO_PHASE7'";
+    } else if (tahap == 7) {
+      query1 =
+        "update pgagent.pga_job set jobenabled=false where jobname='TO_PHASE0'";
+      query2 =
+        "select jstcode from pgagent.pga_jobstep where jstname='STEP_TO_PHASE0'";
+    }
+
+    const res = await client.query(query1, []);
+    const getSQLQuery = await client.query(query2, []);
+    const sqlQuery = getSQLQuery.rows[0].jstcode;
+
+    await client.query(sqlQuery, []);
+
+    await client.query("COMMIT");
+    client.release();
+  } catch (e) {
+    await client.query("ROLLBACK");
+    client.release();
+    throw e;
   }
 }

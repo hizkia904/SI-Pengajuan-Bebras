@@ -25,60 +25,115 @@ export default async function Page({
 }) {
   const { id_soal_usulan } = params;
 
-  return (
-    <>
-      <CustomizeSwitch>
-        <Suspense key="view" fallback={<Skeleton active />}>
-          <Task task_id={id_soal_usulan} />
+  let isUploaderTrue: boolean | null;
+  let isAuthorTrue: boolean | null;
+  let isItExist: any[] | null;
+  const { user } = await validateRequest();
+  if (user == null) {
+    return <p>Belum Login</p>;
+  }
+  const id_user = user.id;
+  try {
+    const queryIsUploaderTrue =
+      "select exists(select 1 from soal_usulan where uploader=$1 and id_soal_usulan=$2)";
+    const getIsUploaderTrue = await runQuery(queryIsUploaderTrue, [
+      id_user,
+      id_soal_usulan,
+    ]);
+    isUploaderTrue = getIsUploaderTrue.rows[0].exists;
+    const queryIsAuthorTrue =
+      "select exists(select 1 from pembuat_soal_usulan where id_user=$1 and id_soal_usulan=$2)";
+    const getIsAuthor = await runQuery(queryIsAuthorTrue, [
+      id_user,
+      id_soal_usulan,
+    ]);
+    isAuthorTrue = getIsAuthor.rows[0].exists;
+    const queryisItExist =
+      "select archived from soal_usulan where id_soal_usulan=$1";
+    const getisItExist = await runQuery(queryisItExist, [id_soal_usulan]);
+    isItExist = getisItExist.rows;
+  } catch (e) {
+    isUploaderTrue = null;
+    isAuthorTrue = null;
+    isItExist = null;
+  }
+
+  return isAuthorTrue != null &&
+    isUploaderTrue !== null &&
+    isItExist != null ? (
+    isItExist.length == 0 ? (
+      <Result
+        status={403}
+        title="You can't see this task"
+        subTitle="You can't see this task because the task doesn't exist"
+      />
+    ) : isItExist[0].archived == true ? (
+      <Result
+        status={403}
+        title="You can't see this task"
+        subTitle="You can't see this task because this task is already archived"
+      />
+    ) : isAuthorTrue == false && isUploaderTrue == false ? (
+      <Result
+        status={403}
+        title="You can't see this task"
+        subTitle="You can't see this task because you are not the author or uploader"
+      />
+    ) : (
+      <>
+        <CustomizeSwitch>
+          <Suspense key="view" fallback={<Skeleton active />}>
+            <Task task_id={id_soal_usulan} />
+          </Suspense>
+          <Suspense key="edit" fallback={<Skeleton active />}>
+            {isAuthorTrue == true ? (
+              <UpdateTask id_soal_usulan={id_soal_usulan} />
+            ) : (
+              <Result
+                status={403}
+                title="You can't edit this task"
+                subTitle="You can't edit the task because you are not the author"
+              />
+            )}
+          </Suspense>
+        </CustomizeSwitch>
+        <Suspense fallback={<SkeletonAvatar active />}>
+          <Download id_soal_usulan={id_soal_usulan} />
         </Suspense>
-        <Suspense key="edit" fallback={<Skeleton active />}>
-          <UpdateTask id_soal_usulan={id_soal_usulan} />
-        </Suspense>
-      </CustomizeSwitch>
-      <Suspense fallback={<SkeletonAvatar active />}>
-        <Download
-          id_soal_usulan={id_soal_usulan}
-          typeDownload="image"
-          style={{ insetInlineEnd: 74 }}
-        />
-      </Suspense>
-      <Suspense fallback={<SkeletonAvatar active />}>
-        <Download
-          id_soal_usulan={id_soal_usulan}
-          typeDownload="file"
-          style={{ insetInlineEnd: 124 }}
-        />
-      </Suspense>
-      <CustomizeDrawer>
-        <Suspense fallback={<Skeleton active />} key="review_nasional">
-          <ReviewNasionalServer
-            id_soal_usulan={id_soal_usulan}
-            tujuan="PENGAJUAN"
-          />
-        </Suspense>
-        <Suspense fallback={<Skeleton active />} key="rating_nasional">
-          <RatingNasionalServer
-            id_soal_usulan={id_soal_usulan}
-            tujuan="PENGAJUAN"
-          />
-        </Suspense>
-        <Suspense fallback={<Skeleton active />} key="rating_internasional">
-          <RatingInternasionalServer
-            id_soal_usulan={id_soal_usulan}
-            tujuan="PENGAJUAN"
-          />
-        </Suspense>
-        <Suspense fallback={<Skeleton active />} key="review_internasional">
-          <ReviewInternasionalServer
-            id_soal_usulan={id_soal_usulan}
-            tujuan="PENGAJUAN"
-          />
-        </Suspense>
-        <Suspense fallback={<Skeleton active />} key="status">
-          <StatusServer id_soal_usulan={id_soal_usulan} tujuan="PENGAJUAN" />
-        </Suspense>
-      </CustomizeDrawer>
-    </>
+
+        <CustomizeDrawer>
+          <Suspense fallback={<Skeleton active />} key="review_nasional">
+            <ReviewNasionalServer
+              id_soal_usulan={id_soal_usulan}
+              tujuan="PENGAJUAN"
+            />
+          </Suspense>
+          <Suspense fallback={<Skeleton active />} key="rating_nasional">
+            <RatingNasionalServer
+              id_soal_usulan={id_soal_usulan}
+              tujuan="PENGAJUAN"
+            />
+          </Suspense>
+          <Suspense fallback={<Skeleton active />} key="rating_internasional">
+            <RatingInternasionalServer
+              id_soal_usulan={id_soal_usulan}
+              tujuan="PENGAJUAN"
+            />
+          </Suspense>
+          <Suspense fallback={<Skeleton active />} key="review_internasional">
+            <ReviewInternasionalServer
+              id_soal_usulan={id_soal_usulan}
+              tujuan="PENGAJUAN"
+            />
+          </Suspense>
+          <Suspense fallback={<Skeleton active />} key="status">
+            <StatusServer id_soal_usulan={id_soal_usulan} tujuan="PENGAJUAN" />
+          </Suspense>
+        </CustomizeDrawer>
+      </>
+    )
+  ) : (
+    <ErrorResult subtitle="Unabled to display task" />
   );
 }
 
@@ -93,7 +148,7 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
       />
     );
   }
-  const id_user = user?.id;
+  const id_user = user.id;
   let categories: any[] | null;
   let age: any[] | null;
   let anggota: any[] | null;
@@ -102,6 +157,7 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
   let chosenCategories: any[] | null;
   let editedValue: BebrasTask | null;
   let chosenImage: imagePath[] | null;
+  let isAuthorTrue: boolean | null;
 
   try {
     const queryCategories = "select id_categories,nama from categories";
@@ -114,12 +170,12 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
     age = getAge.rows;
 
     const queryAnggota =
-      "select id as value,nama as label from user_bebras where role='BIRO'";
+      "select id as value,nama as label,email from user_bebras where role='BIRO'";
     const getAnggota = await runQuery(queryAnggota, []);
     anggota = getAnggota.rows;
 
     const queryChosenAuthors =
-      "select id_user as authors,peran,main from pembuat_soal_usulan where id_soal_usulan=$1";
+      "select id_user as authors,peran from pembuat_soal_usulan where id_soal_usulan=$1";
     const getChosenAuthors = await runQuery(queryChosenAuthors, [
       id_soal_usulan,
     ]);
@@ -164,6 +220,14 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
       'select path,file_name as "fileName" from gambar_soal_usulan where id_soal_usulan=$1';
     const getChosenImage = await runQuery(queryChosenImage, [id_soal_usulan]);
     chosenImage = getChosenImage.rows;
+
+    const queryIsAuthorTrue =
+      "select exists(select 1 from pembuat_soal_usulan where id_user=$1 and id_soal_usulan=$2)";
+    const getIsAuthor = await runQuery(queryIsAuthorTrue, [
+      id_user,
+      id_soal_usulan,
+    ]);
+    isAuthorTrue = getIsAuthor.rows[0].exists;
   } catch (e) {
     categories = null;
     age = null;
@@ -173,6 +237,7 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
     chosenCategories = null;
     editedValue = null;
     chosenImage = null;
+    isAuthorTrue = null;
   }
 
   return categories != null &&
@@ -182,19 +247,28 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
     chosenAuthors != null &&
     chosenCategories != null &&
     editedValue != null &&
-    chosenImage != null ? (
-    <FormAddTask
-      id_user={id_user}
-      categories={categories}
-      age={age}
-      anggota={anggota}
-      chosenAuthors={chosenAuthors}
-      chosenAge={chosenAge}
-      chosenCategories={chosenCategories}
-      editedValue={editedValue}
-      id_soal_usulan={id_soal_usulan}
-      chosenImage={chosenImage}
-    />
+    chosenImage != null &&
+    isAuthorTrue != null ? (
+    isAuthorTrue == true ? (
+      <FormAddTask
+        id_user={id_user}
+        categories={categories}
+        age={age}
+        anggota={anggota}
+        chosenAuthors={chosenAuthors}
+        chosenAge={chosenAge}
+        chosenCategories={chosenCategories}
+        editedValue={editedValue}
+        id_soal_usulan={id_soal_usulan}
+        chosenImage={chosenImage}
+      />
+    ) : (
+      <Result
+        status={403}
+        title="You can't edit this task"
+        subTitle="You can't edit the task because you are not the author"
+      />
+    )
   ) : (
     <ErrorResult subtitle="Unabled to add task" />
   );

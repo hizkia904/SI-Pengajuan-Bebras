@@ -41,9 +41,9 @@ export default function ProLayoutComp({
   role: string | undefined;
 }) {
   const path_now = usePathname();
-  const initial_state = path_now.startsWith("/tim_nasional/bank_soal")
-    ? "/tim_nasional/bank_soal"
-    : path_now.startsWith("/tim_nasional/bebras_task/pengajuan")
+  const initial_state = path_now.startsWith(
+    "/tim_nasional/bebras_task/pengajuan"
+  )
     ? "/tim_nasional/bebras_task/pengajuan"
     : path_now.startsWith("/tim_nasional/bebras_task/archive")
     ? "/tim_nasional/bebras_task/archive"
@@ -65,9 +65,13 @@ export default function ProLayoutComp({
     ? "/biro/profile"
     : path_now.startsWith("/admin/categories")
     ? "/admin/categories"
-    : path_now.startsWith("/admin/negara")
-    ? "/admin/negara"
-    : "/admin/usia";
+    : path_now.startsWith("/admin/usia")
+    ? "/admin/usia"
+    : path_now.startsWith("/admin/user_settings")
+    ? "/admin/user_settings"
+    : path_now.startsWith("/admin/biro")
+    ? "/admin/biro"
+    : "/admin/profile";
   const [pathname, setPathname] = useState(initial_state);
 
   const router = useRouter();
@@ -80,17 +84,6 @@ export default function ProLayoutComp({
       placement: "top",
     });
   };
-
-  // const searchParams = useSearchParams();
-  // const pathNama = usePathname();
-  // const [isPending, setIsPending] = useState(false);
-  // useEffect(() => {
-  //   setIsPending(true);
-  //   return () => {
-  //     console.log("complete");
-  //     setIsPending(false);
-  //   };
-  // }, [pathNama, searchParams]);
 
   return (
     <ProLayout
@@ -118,7 +111,7 @@ export default function ProLayoutComp({
               router.push(item.path);
               setPathname(item.path.split("?")[0]);
             }
-            console.log(item.path);
+
             // setPathname(item.path || "/welcome");
           }}
         >

@@ -16,6 +16,7 @@ export default async function RatingInternasionalServer({
     return <p>...</p>;
   }
   const role = user.role;
+  const ketua = user.ketua;
   let ratingInternasional: any[] | string;
 
   try {
@@ -28,7 +29,9 @@ export default async function RatingInternasionalServer({
   }
   return typeof ratingInternasional == "string" ? (
     <ErrorResult subtitle={ratingInternasional} />
-  ) : role == "BIRO" || (role == "TIM NASIONAL" && tujuan == "ARCHIVE") ? (
+  ) : role == "BIRO" ||
+    (role == "TIM NASIONAL" && ketua == false) ||
+    (role == "TIM NASIONAL" && ketua == true && tujuan == "ARCHIVE") ? (
     <RatingInternasionalClient ratingInternasional={ratingInternasional} />
   ) : (
     <FormRatingInternasional

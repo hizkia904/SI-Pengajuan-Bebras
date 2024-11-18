@@ -25,12 +25,14 @@ export default function StatusClient({
   tujuan,
   id_soal_usulan,
   tahap_sekarang,
+  ketua,
 }: {
   status: any;
   role: string;
   tujuan: "ARCHIVE" | "PENGAJUAN";
   id_soal_usulan: string;
   tahap_sekarang: number;
+  ketua: boolean;
 }) {
   const router = useRouter();
   const openNotification = useContext(MyContext);
@@ -40,7 +42,9 @@ export default function StatusClient({
       style: { textAlign: "center" },
       label: "Status Nasional",
       children:
-        role == "BIRO" || (role == "TIM NASIONAL" && tujuan == "ARCHIVE") ? (
+        role == "BIRO" ||
+        (role == "TIM NASIONAL" && ketua == false) ||
+        (role == "TIM NASIONAL" && ketua == true && tujuan == "ARCHIVE") ? (
           status.status_nasional == "ACCEPTED" ? (
             <Tag color="success">{status.status_nasional}</Tag>
           ) : status.status_nasional == "REJECTED" ? (
@@ -106,7 +110,9 @@ export default function StatusClient({
       style: { textAlign: "center" },
       label: "Go To International",
       children:
-        role == "BIRO" || (role == "TIM NASIONAL" && tujuan == "ARCHIVE") ? (
+        role == "BIRO" ||
+        (role == "TIM NASIONAL" && ketua == false) ||
+        (role == "TIM NASIONAL" && ketua == true && tujuan == "ARCHIVE") ? (
           status.gotointernational == true ? (
             <CheckCircleOutlined style={{ color: "green" }} />
           ) : (
@@ -156,7 +162,7 @@ export default function StatusClient({
       style: { textAlign: "center" },
       label: "Status Internasional",
       children:
-        role == "BIRO" ? (
+        role == "BIRO" || (role == "TIM NASIONAL" && ketua == false) ? (
           status.status_internasional == null ? (
             <Tag color="cyan">-</Tag>
           ) : status.status_internasional == "ACCEPTED" ? (
@@ -168,7 +174,7 @@ export default function StatusClient({
           ) : (
             <Tag color="default">{status.status_internasional}</Tag>
           )
-        ) : role == "TIM NASIONAL" ? (
+        ) : role == "TIM NASIONAL" && ketua == true ? (
           tujuan == "ARCHIVE" ? (
             status.status_internasional == null ? (
               <Tag color="cyan">-</Tag>

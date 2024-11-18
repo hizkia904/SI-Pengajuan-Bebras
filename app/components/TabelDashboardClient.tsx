@@ -15,17 +15,27 @@ import { Chart, ChartDataset, registerables } from "chart.js";
 import { useState } from "react";
 const { Title } = Typography;
 const { Group } = Checkbox;
+const { Group: RadioGroup } = Radio;
 
 Chart.register(...registerables);
 
 export default function TabelDashboardClient({
   dashboardData,
   grafik,
+  role,
 }: {
   dashboardData: DashboardData[];
   grafik: Grafik;
+  role: string;
 }) {
-  console.log(grafik.internationalworkNeeded);
+  const tambahanColumnTimnas: TableProps<DashboardData>["columns"] = [
+    {
+      title: "Partisipasi Biro",
+      dataIndex: "partisipasibiro",
+      align: "center",
+    },
+  ];
+
   const columns: TableProps<DashboardData>["columns"] = [
     { title: "Tahun", dataIndex: "tahun", align: "center" },
     {
@@ -33,11 +43,7 @@ export default function TabelDashboardClient({
       dataIndex: "totalsoalterkumpul",
       align: "center",
     },
-    {
-      title: "Partisipasi Biro",
-      dataIndex: "partisipasibiro",
-      align: "center",
-    },
+    ...(role == "TIM NASIONAL" ? tambahanColumnTimnas : []),
     {
       title: "Status Nasional",
       align: "center",
@@ -85,26 +91,17 @@ export default function TabelDashboardClient({
 
   const [mode, setMode] = useState<"Grafik" | "Tabel">("Tabel");
 
-  // const [showLine1, setShowLine1] = useState(true);
-  // const [showLine2, setShowLine2] = useState(false);
-  // const [showLine3, setShowLine3] = useState(false);
-  // const [showLine4, setShowLine4] = useState(false);
-  // const [showLine5, setShowLine5] = useState(false);
-  // const [showLine6, setShowLine6] = useState(false);
-  // const [showLine7, setShowLine7] = useState(false);
-  // const [showLine8, setShowLine8] = useState(false);
-
-  const [datasets, setDatasets] = useState<ChartDataset<"line", number[]>[]>([
+  const [datasets, setDatasets] = useState<ChartDataset<"bar", number[]>[]>([
     {
       borderColor: "#979ff7",
+      backgroundColor: "#979ff7",
       label: "Soal Terkumpul",
       data: grafik.totalsoalterkumpul,
     },
   ]);
-  console.log(dashboardData);
   const options = [
     "Soal Terkumpul",
-    "Partisipasi Biro",
+    ...(role == "TIM NASIONAL" ? ["Partisipasi Biro"] : []),
     "Accepted Nasional",
     "Rejected Nasional",
     "Masuk Tahap Internasional",
@@ -118,7 +115,7 @@ export default function TabelDashboardClient({
     if (e.target.checked) {
       setValueGroup([
         "Soal Terkumpul",
-        "Partisipasi Biro",
+        ...(role == "TIM NASIONAL" ? ["Partisipasi Biro"] : []),
         "Accepted Nasional",
         "Rejected Nasional",
         "Masuk Tahap Internasional",
@@ -129,42 +126,54 @@ export default function TabelDashboardClient({
       setDatasets([
         {
           borderColor: "#979ff7",
+          backgroundColor: "#979ff7",
           label: "Soal Terkumpul",
           data: grafik.totalsoalterkumpul,
         },
-        {
-          label: "Partisipasi Biro",
-          borderColor: "#489da8",
-          data: grafik.partisipasibiro,
-        },
+        ...(role == "TIM NASIONAL"
+          ? [
+              {
+                label: "Partisipasi Biro",
+                borderColor: "#489da8",
+                backgroundColor: "#489da8",
+                data: grafik.partisipasibiro,
+              },
+            ]
+          : []),
         {
           label: "Accepted Nasional",
           borderColor: "#a2e8a8",
+          backgroundColor: "#a2e8a8",
           data: grafik.nasionalaccepted,
         },
         {
           label: "Rejected Nasional",
           borderColor: "#f7a797",
+          backgroundColor: "#f7a797",
           data: grafik.nasionalrejected,
         },
         {
           label: "Masuk Tahap Internasional",
           borderColor: "#f797ee",
+          backgroundColor: "#f797ee",
           data: grafik.gotointernational,
         },
         {
           label: "Accepted Internasional",
           borderColor: "#97f7cc",
+          backgroundColor: "#97f7cc",
           data: grafik.internationalaccepted,
         },
         {
           label: "Heldback Internasional",
           borderColor: "#d7e32b",
+          backgroundColor: "#d7e32b",
           data: grafik.internationalheldback,
         },
         {
           label: "Work Needed Internasional",
           borderColor: "#e32b4d",
+          backgroundColor: "#e32b4d",
           data: grafik.internationalworkNeeded,
         },
       ]);
@@ -174,6 +183,9 @@ export default function TabelDashboardClient({
     }
   };
   const [valueGroup, setValueGroup] = useState<String[]>(["Soal Terkumpul"]);
+
+  const [tipeGrafik, setTipeGrafik] = useState<"bar" | "line">("bar");
+
   return (
     <>
       <Title level={3}>Dashboard</Title>
@@ -199,6 +211,19 @@ export default function TabelDashboardClient({
           />
         ) : (
           <>
+            <RadioGroup
+              // block
+              options={[
+                { label: "Line", value: "line" },
+                { label: "Bar", value: "bar" },
+              ]}
+              value={tipeGrafik}
+              onChange={(e) => {
+                setTipeGrafik(e.target.value);
+              }}
+              optionType="button"
+              buttonStyle="solid"
+            />
             <Checkbox
               indeterminate={indeterminate}
               onChange={onCheckAllChange}
@@ -211,20 +236,24 @@ export default function TabelDashboardClient({
               defaultValue={["Soal Terkumpul"]}
               options={options}
               onChange={(checkedValue) => {
-                console.log(checkedValue);
                 setValueGroup(checkedValue);
                 const newArr: ChartDataset<"line", number[]>[] = [];
                 if (checkedValue.includes("Soal Terkumpul")) {
                   newArr.push({
                     borderColor: "#979ff7",
+                    backgroundColor: "#979ff7",
                     label: "Soal Terkumpul",
                     data: grafik.totalsoalterkumpul,
                   });
                 }
-                if (checkedValue.includes("Partisipasi Biro")) {
+                if (
+                  checkedValue.includes("Partisipasi Biro") &&
+                  role == "TIM NASIONAL"
+                ) {
                   newArr.push({
                     label: "Partisipasi Biro",
                     borderColor: "#489da8",
+                    backgroundColor: "#489da8",
                     data: grafik.partisipasibiro,
                   });
                 }
@@ -232,6 +261,7 @@ export default function TabelDashboardClient({
                   newArr.push({
                     label: "Accepted Nasional",
                     borderColor: "#a2e8a8",
+                    backgroundColor: "#a2e8a8",
                     data: grafik.nasionalaccepted,
                   });
                 }
@@ -239,6 +269,7 @@ export default function TabelDashboardClient({
                   newArr.push({
                     label: "Rejected Nasional",
                     borderColor: "#f7a797",
+                    backgroundColor: "#f7a797",
                     data: grafik.nasionalrejected,
                   });
                 }
@@ -246,6 +277,7 @@ export default function TabelDashboardClient({
                   newArr.push({
                     label: "Masuk Tahap Internasional",
                     borderColor: "#f797ee",
+                    backgroundColor: "#f797ee",
                     data: grafik.gotointernational,
                   });
                 }
@@ -253,6 +285,7 @@ export default function TabelDashboardClient({
                   newArr.push({
                     label: "Accepted Internasional",
                     borderColor: "#97f7cc",
+                    backgroundColor: "#97f7cc",
                     data: grafik.internationalaccepted,
                   });
                 }
@@ -260,6 +293,7 @@ export default function TabelDashboardClient({
                   newArr.push({
                     label: "Heldback Internasional",
                     borderColor: "#d7e32b",
+                    backgroundColor: "#d7e32b",
                     data: grafik.internationalheldback,
                   });
                 }
@@ -267,30 +301,54 @@ export default function TabelDashboardClient({
                   newArr.push({
                     label: "Work Needed Internasional",
                     borderColor: "#e32b4d",
+                    backgroundColor: "#e32b4d",
                     data: grafik.internationalworkNeeded,
                   });
                 }
                 setDatasets(newArr);
               }}
             />
-            <Line
-              style={{ width: "100%" }}
-              options={{
-                scales: {
-                  y: {
-                    suggestedMax: 30,
-                    suggestedMin: 0,
+            {tipeGrafik == "line" ? (
+              <>
+                <Line
+                  style={{ width: "100%" }}
+                  options={{
+                    scales: {
+                      y: {
+                        suggestedMax: 10,
+                        suggestedMin: 0,
+                      },
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    borderColor: "#1677ff",
+                  }}
+                  data={{
+                    datasets: datasets,
+                    labels: grafik.tahun,
+                  }}
+                />
+              </>
+            ) : (
+              <Bar
+                style={{ width: "100%" }}
+                options={{
+                  scales: {
+                    y: {
+                      suggestedMax: 10,
+                      suggestedMin: 0,
+                    },
                   },
-                },
-                responsive: true,
-                maintainAspectRatio: false,
-                borderColor: "#1677ff",
-              }}
-              data={{
-                datasets: datasets,
-                labels: grafik.tahun,
-              }}
-            />
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  borderColor: "#1677ff",
+                }}
+                data={{
+                  datasets: datasets,
+                  labels: grafik.tahun,
+                }}
+              />
+            )}
           </>
         )}
       </Space>

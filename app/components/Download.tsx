@@ -1,21 +1,10 @@
-import {
-  FileImageOutlined,
-  FileOutlined,
-  FileTextOutlined,
-} from "@ant-design/icons";
 import { runQuery } from "../db";
 import DownloadFloatButton from "./DownloadFloatButton";
-import { CSSProperties, ReactNode } from "react";
-import { FloatButton } from "antd";
 
 export default async function Download({
   id_soal_usulan,
-  typeDownload,
-  style,
 }: {
   id_soal_usulan: string;
-  typeDownload: "image" | "file";
-  style: CSSProperties;
 }) {
   let title: string | null;
   try {
@@ -28,19 +17,6 @@ export default async function Download({
   }
 
   return typeof title == "string" ? (
-    <DownloadFloatButton
-      tooltip={typeDownload == "file" ? "Download File" : "Download Images"}
-      style={style}
-      title={title}
-      id_soal_usulan={id_soal_usulan}
-      typeDownload={typeDownload}
-      icon={
-        typeDownload == "file" ? (
-          <FileTextOutlined style={{ color: "#323ea8" }} />
-        ) : (
-          <FileImageOutlined style={{ color: "#323ea8" }} />
-        )
-      }
-    />
+    <DownloadFloatButton title={title} id_soal_usulan={id_soal_usulan} />
   ) : undefined;
 }

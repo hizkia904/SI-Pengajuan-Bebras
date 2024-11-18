@@ -221,23 +221,6 @@ export function SignUpForm({ biro }: { biro: any[] }) {
                 options={biro}
               />
             </Item>
-            <Item
-              label="Role"
-              name="role"
-              rules={[
-                { required: true, message: "Please fill out this field" },
-              ]}
-            >
-              <Select
-                showSearch
-                placeholder="Role"
-                options={[
-                  { label: "BIRO", value: "BIRO" },
-                  { label: "ADMIN", value: "ADMIN" },
-                  { label: "TIM NASIONAL", value: "TIM NASIONAL" },
-                ]}
-              />
-            </Item>
           </Col>
         </Row>
       </Row>

@@ -29,8 +29,6 @@ export async function POST(request: Request) {
     }
   }
 
-  console.log(formData);
-
   //   const response = JSON.stringify({
   //     success: true,
   //     time: "2 sec",

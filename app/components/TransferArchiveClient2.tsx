@@ -1,17 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  Button,
-  Col,
-  Flex,
-  Modal,
-  Row,
-  Switch,
-  Table,
-  Tag,
-  Transfer,
-} from "antd";
+import React, { useContext, useState } from "react";
+import { Alert, Button, Col, Modal, Row, Space, Table, Transfer } from "antd";
 import type {
   GetProp,
   TableColumnsType,
@@ -23,7 +13,8 @@ import { TransferKey } from "antd/lib/transfer/interface";
 import { TransferDirection } from "antd/lib/transfer";
 import { AddArchiveToPengajuan } from "../actions";
 import { useRouter } from "next/navigation";
-import { PlusCircleFilled, PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
+import { MyContext } from "./ProLayoutComp";
 
 type TransferItem = GetProp<TransferProps, "dataSource">[number];
 type TableRowSelection<T extends object> = TableProps<T>["rowSelection"];
@@ -43,8 +34,12 @@ interface TableTransferProps extends TransferProps<TransferItem> {
 
 // Customize Table Transfer
 const TableTransfer: React.FC<TableTransferProps> = (props) => {
+  const openNotification = useContext(MyContext);
   const { leftColumns, rightColumns, ...restProps } = props;
   const router = useRouter();
+  function isNumberArray(arr: unknown): arr is number[] {
+    return Array.isArray(arr) && arr.every((item) => typeof item === "number");
+  }
   return (
     <Transfer
       style={{ width: "100%" }}
@@ -54,16 +49,34 @@ const TableTransfer: React.FC<TableTransferProps> = (props) => {
         direction: TransferDirection,
         moveKeys: TransferKey[]
       ) => {
-        console.log("changed");
-        console.log(moveKeys);
-        console.log(direction);
-        if (direction == "left") {
-          await AddArchiveToPengajuan(moveKeys, true);
-        } else {
-          await AddArchiveToPengajuan(moveKeys, false);
+        try {
+          if (direction == "left") {
+            if (isNumberArray(moveKeys)) {
+              await AddArchiveToPengajuan(moveKeys, true);
+            }
+          } else {
+            if (isNumberArray(moveKeys)) {
+              await AddArchiveToPengajuan(moveKeys, false);
+            }
+          }
+          router.refresh();
+          if (openNotification) {
+            if (direction == "left") {
+              openNotification(
+                "success",
+                "Successfully remove task from archive"
+              );
+            } else if (direction == "right") {
+              openNotification("success", "Successfully add task from archive");
+            }
+          }
+        } catch (e) {
+          if (openNotification) {
+            if (e instanceof Error) {
+              openNotification("error", e.message);
+            }
+          }
         }
-
-        router.refresh();
       }}
     >
       {({
@@ -95,22 +108,12 @@ const TableTransfer: React.FC<TableTransferProps> = (props) => {
             dataSource={filteredItems}
             size="small"
             style={{ pointerEvents: listDisabled ? "none" : undefined }}
-            // onRow={({ key, disabled: itemDisabled }) => ({
-            //   onClick: () => {
-            //     if (itemDisabled || listDisabled) {
-            //       return;
-            //     }
-            //     onItemSelect(key, !listSelectedKeys.includes(key));
-            //   },
-            // })}
           />
         );
       }}
     </Transfer>
   );
 };
-
-const mockTags = ["cat", "dog", "bird"];
 
 const columnsLeft: TableColumnsType<DataType> = [
   {
@@ -172,12 +175,12 @@ export default function TransferArchiveClient2({
   archiveAccepted: any[];
   pengajuanDariArchived: any[];
 }) {
-  const [targetKeys, setTargetKeys] = useState<TransferProps["targetKeys"]>([]);
+  // const [targetKeys, setTargetKeys] = useState<TransferProps["targetKeys"]>([]);
   const [disabled, setDisabled] = useState(false);
 
-  const onChange: TableTransferProps["onChange"] = (nextTargetKeys) => {
-    setTargetKeys(nextTargetKeys);
-  };
+  // const onChange: TableTransferProps["onChange"] = (nextTargetKeys) => {
+  //   setTargetKeys(nextTargetKeys);
+  // };
 
   const toggleDisabled = (checked: boolean) => {
     setDisabled(checked);
@@ -200,26 +203,36 @@ export default function TransferArchiveClient2({
       </Row>
 
       <Modal
+        footer={null}
         centered
-        width={1000}
-        title="Basic Modal"
+        width="80vw"
+        height="90vh"
+        title="Get Accepted Task from Archive"
         open={showModal}
         onCancel={() => setShowModal(false)}
       >
         {/* <Flex align="start" gap="middle" vertical> */}
-        <TableTransfer
-          titles={["Archive", "Pengajuan"]}
-          dataSource={archiveAccepted}
-          targetKeys={pengajuanDariArchived}
-          disabled={disabled}
-          showSearch
-          showSelectAll={false}
-          onChange={onChange}
-          filterOption={filterOption}
-          leftColumns={columnsLeft}
-          rightColumns={columnsRight}
-        />
-        {/* </Flex> */}
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Alert
+            message="Warning"
+            description="Pastikan soal belum muncul di kegiatan lain!"
+            type="warning"
+            showIcon
+          />
+          <TableTransfer
+            titles={["Archive", "Pengajuan"]}
+            dataSource={archiveAccepted}
+            targetKeys={pengajuanDariArchived}
+            disabled={disabled}
+            showSearch
+            showSelectAll={false}
+            // onChange={onChange}
+            filterOption={filterOption}
+            leftColumns={columnsLeft}
+            rightColumns={columnsRight}
+          />
+          {/* </Flex> */}
+        </Space>
       </Modal>
     </>
   );

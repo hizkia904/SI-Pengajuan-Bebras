@@ -26,6 +26,7 @@ import CustomizeSelect from "./CustomizeSelect";
 
 import transformTimestamp from "@/dateTransform";
 import {
+  ArrowDownOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   FileImageOutlined,
@@ -49,12 +50,14 @@ export function TableArchiveClient({
   rating,
   total,
   biro,
+  ketua,
 }: {
   role: string;
   dataSource: TableRows[];
   rating: any[];
   total: number;
   biro: any[];
+  ketua: boolean;
 }) {
   const router = useRouter();
 
@@ -185,28 +188,18 @@ export function TableArchiveClient({
       key: "status_internasional",
       align: "center",
       render(value: any, record: TableRows, index: number) {
-        if (role == "BIRO") {
-          if (value == null) {
-            return <Tag color="cyan">-</Tag>;
-          } else if (value == "ACCEPTED") {
-            return <Tag color="success">{value}</Tag>;
-          } else if (value == "HELDBACK") {
-            return <Tag color="error">{value}</Tag>;
-          } else if (value == "WORK NEEDED") {
-            return <Tag color="warning">{value}</Tag>;
-          } else if (value == "WAITING FOR RESULT") {
+        if (value == null) {
+          return <Tag color="cyan">-</Tag>;
+        } else if (value == "ACCEPTED") {
+          return <Tag color="success">{value}</Tag>;
+        } else if (value == "HELDBACK") {
+          return <Tag color="error">{value}</Tag>;
+        } else if (value == "WORK NEEDED") {
+          return <Tag color="warning">{value}</Tag>;
+        } else if (value == "WAITING FOR RESULT") {
+          if (role == "BIRO" || (role == "TIM NASIONAL" && ketua == false)) {
             return <Tag color="default">{value}</Tag>;
-          }
-        } else if (role == "TIM NASIONAL") {
-          if (value == null) {
-            return <Tag color="cyan">-</Tag>;
-          } else if (value == "ACCEPTED") {
-            return <Tag color="success">{value}</Tag>;
-          } else if (value == "HELDBACK") {
-            return <Tag color="error">{value}</Tag>;
-          } else if (value == "WORK NEEDED") {
-            return <Tag color="warning">{value}</Tag>;
-          } else if (value == "WAITING FOR RESULT") {
+          } else if (role == "TIM NASIONAL" && ketua == true) {
             return (
               <CustomizeSelect
                 options={[
@@ -255,7 +248,7 @@ export function TableArchiveClient({
       render(value, record, index) {
         return (
           <>
-            <ButtonWithLoading
+            {/* <ButtonWithLoading
               icon={<FileTextOutlined style={{ color: "#323ea8" }} />}
               type="text"
               onClick={async () => {
@@ -273,9 +266,9 @@ export function TableArchiveClient({
                   }
                 }
               }}
-            />
+            /> */}
 
-            <ButtonWithLoading
+            {/* <ButtonWithLoading
               icon={<FileImageOutlined style={{ color: "#323ea8" }} />}
               type="text"
               onClick={async () => {
@@ -302,6 +295,43 @@ export function TableArchiveClient({
                     if (openNotification) {
                       openNotification("success", "Download Successfull!");
                     }
+                  }
+                } catch (e) {
+                  if (openNotification) {
+                    openNotification("error", "Download Failed!");
+                  }
+                }
+              }}
+            /> */}
+            <ButtonWithLoading
+              type="text"
+              icon={<ArrowDownOutlined style={{ color: "#323ea8" }} />}
+              onClick={async () => {
+                try {
+                  const imagePath = await getImage(record.key);
+
+                  const arrBuff = await downloadUsingPandoc(record.key);
+                  const buff = Buffer.from(arrBuff);
+                  const blob2 = new Blob([buff]);
+                  const zip = new JSZip();
+                  zip.file(record.task_title + ".odt", blob2, { base64: true });
+                  if (imagePath.length != 0) {
+                    const graphics = zip.folder("graphics");
+                    for (let i = 0; i < imagePath.length; i++) {
+                      graphics?.file(
+                        imagePath[i].file_name,
+                        imagePath[i].path,
+                        {
+                          base64: true,
+                        }
+                      );
+                    }
+                  }
+
+                  const blob = await zip.generateAsync({ type: "blob" });
+                  FileSaver.saveAs(blob, `${record.task_title}.zip`);
+                  if (openNotification) {
+                    openNotification("success", "Download Successfull!");
                   }
                 } catch (e) {
                   if (openNotification) {
@@ -382,7 +412,6 @@ export function TableArchiveClient({
                 options={biro}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value) {
                     params.set("biro_uploader", value);
@@ -414,7 +443,6 @@ export function TableArchiveClient({
                 ]}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value) {
                     params.set("a", value);
@@ -452,7 +480,6 @@ export function TableArchiveClient({
                 ]}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value) {
                     params.set("stat_nas", value);
@@ -495,7 +522,6 @@ export function TableArchiveClient({
                 ]}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value) {
                     params.set("stat_inter", value);
@@ -539,9 +565,7 @@ export function TableArchiveClient({
                   },
                 ]}
                 onChange={(value: any) => {
-                  console.log(value);
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (value != null) {
                     params.set("go_inter", value);
@@ -568,7 +592,6 @@ export function TableArchiveClient({
                 ) => {
                   const tahun = date?.year();
                   const params = new URLSearchParams(searchParams.toString());
-                  console.log(params.toString());
                   params.set("p", "1");
                   if (tahun) {
                     params.set("t", tahun + "");
@@ -590,7 +613,6 @@ export function TableArchiveClient({
           icon={<ReloadOutlined />}
           onClick={() => {
             const params = new URLSearchParams(searchParams.toString());
-            console.log(params.toString());
             params.set("p", "1");
             params.delete("a");
             params.delete("s");
@@ -615,11 +637,11 @@ export function TableArchiveClient({
         </Button>
         <Table
           pagination={{
+            showSizeChanger: false,
             total: total,
             current: Number(p),
             onChange(page, pageSize) {
               const params = new URLSearchParams(searchParams.toString());
-              console.log(params.toString());
               params.set("p", page + "");
               const params_string = params.toString();
               router.push(pathname + "?" + params_string);

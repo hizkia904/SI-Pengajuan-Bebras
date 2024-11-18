@@ -39,18 +39,6 @@ export interface TableRows {
   biro_last_updated: string;
 }
 
-export interface BankSoalTableRows {
-  id_bank_soal: number;
-  kode_soal: string;
-  tahun: number;
-  answer_type: string;
-  rating_nasional: number | null;
-  rating_internasional: number;
-  best_task: boolean;
-  negara: string;
-  terpilih: boolean;
-}
-
 export interface BankSoalGeneralInfo {
   kode_soal: string;
   tahun: number;
@@ -117,7 +105,7 @@ export interface BebrasTask {
 }
 
 export interface Authors {
-  id_user: number;
+  authors: number;
   peran: string;
 }
 

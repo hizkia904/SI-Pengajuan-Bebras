@@ -7,6 +7,7 @@ import {
   faList,
   faScroll,
   faUser,
+  faUsersRectangle,
 } from "@fortawesome/free-solid-svg-icons";
 
 export const routes_biro = [
@@ -43,12 +44,7 @@ export const routes_tim_nasional = [
       { path: "/tim_nasional/bebras_task/info", name: "Info" },
     ],
   },
-  {
-    path: "/tim_nasional/bank_soal",
-    name: "Bank Soal",
-    icon: <FontAwesomeIcon icon={faBuildingColumns} />,
-    component: "bank_soal",
-  },
+
   {
     path: "/tim_nasional/profile",
     name: "Profile",
@@ -64,19 +60,25 @@ export const routes_admin = [
     icon: <FontAwesomeIcon icon={faList} />,
     component: "bebras_task",
   },
-  {
-    path: "/admin/negara",
-    name: "Negara",
-    icon: <FontAwesomeIcon icon={faGlobe} />,
-    component: "bebras_task",
-  },
+
   {
     path: "/admin/usia",
     name: "Usia",
     icon: <FontAwesomeIcon icon={faScroll} />,
     component: "bebras_task",
   },
-
+  {
+    path: "/admin/biro",
+    name: "Biro",
+    icon: <FontAwesomeIcon icon={faBuildingColumns} />,
+    component: "profile",
+  },
+  {
+    path: "/admin/user_settings",
+    name: "User Settings",
+    icon: <FontAwesomeIcon icon={faUsersRectangle} />,
+    component: "profile",
+  },
   {
     path: "/admin/profile",
     name: "Profile",

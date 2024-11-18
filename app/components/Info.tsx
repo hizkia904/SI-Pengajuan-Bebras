@@ -13,7 +13,6 @@ const { Paragraph, Title } = Typography;
 export default function Info() {
   const [current, setCurrent] = useState(1);
   const onChange = (value: number) => {
-    console.log("onChange:", value);
     setCurrent(value);
   };
   return (
@@ -70,23 +69,25 @@ export default function Info() {
           <Col span={12}>
             {current == 1 ? (
               <>
-                <Title level={5}>Tahap 1 Pengumpulan Soal</Title>
+                <Title level={5}>Tahap Pengumpulan Soal</Title>
                 <Paragraph>
                   Pada tahap ini Biro mengumpulkan soal-soal usulan yang nanti
-                  akan direview oleh Tim Nasional.
+                  akan diberi review dan rating oleh Tim Nasional.
                 </Paragraph>
               </>
             ) : current == 2 ? (
               <>
-                <Title level={5}>Tahap 2 Review Nasional</Title>
+                <Title level={5}>Tahap Review Nasional</Title>
                 <Paragraph>
                   Pada tahap ini Tim Nasional memberi review dan rating dari
-                  tiap soal yang dikumpulkan oleh Biro.
+                  tiap soal yang dikumpulkan oleh Biro. Rating yang diberikan
+                  terdiri dari rating 'As For Now' dan 'Potential'. Tim Nasional
+                  bisa memberi review pada tiap bagian dari soal.
                 </Paragraph>
               </>
             ) : current == 3 ? (
               <>
-                <Title level={5}>Tahap 3 Revisi Nasional (oleh Biro)</Title>
+                <Title level={5}>Tahap Revisi Nasional (oleh Biro)</Title>
                 <Paragraph>
                   Pada tahap ini Biro melakukan revisi berdasarkan review dan
                   rating yang diberikan oleh Tim Nasional.
@@ -94,7 +95,7 @@ export default function Info() {
               </>
             ) : current == 4 ? (
               <>
-                <Title level={5}>Tahap 4 Penjaringan</Title>
+                <Title level={5}>Tahap Penjaringan</Title>
                 <Paragraph>
                   Pada tahap ini Tim Nasional akan memutuskan soal usulan mana
                   yang diterima dan ditolak, serta apakah soal yang diterima
@@ -103,17 +104,15 @@ export default function Info() {
               </>
             ) : current == 5 ? (
               <>
-                <Title level={5}>Tahap 5 Review Internasional</Title>
+                <Title level={5}>Tahap Review Internasional</Title>
                 <Paragraph>
                   Pada tahap ini tim nasional akan memasukkan review dan rating
-                  internasional dari tiap soal yang dikumpulkan
+                  internasional dari tiap soal yang dikumpulkan.
                 </Paragraph>
               </>
             ) : current == 6 ? (
               <>
-                <Title level={5}>
-                  Tahap 6 Revisi Internasional (oleh Biro)
-                </Title>
+                <Title level={5}>Tahap Revisi Internasional (oleh Biro)</Title>
                 <Paragraph>
                   Pada tahap ini Biro melakukan revisi berdasarkan review dan
                   rating yang diberikan oleh tim internasional
@@ -121,7 +120,7 @@ export default function Info() {
               </>
             ) : current == 7 ? (
               <>
-                <Title level={5}>Tahap 7 Hasil Internasional</Title>
+                <Title level={5}>Tahap Hasil Internasional</Title>
                 <Paragraph>
                   Pada tahap ini Tim Nasional memasukkan hasil internasional
                   dari tiap soal usulan yang maju ke internasional

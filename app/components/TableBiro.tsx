@@ -1,26 +1,31 @@
 "use client";
-import { EditOutlined, LoadingOutlined } from "@ant-design/icons";
+import { EditOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Modal, Spin, Table } from "antd";
 import { useContext, useState } from "react";
-import { addNegara, checkKodeNegara, updateNegara } from "../actions";
+import {
+  addBiro,
+  addCategories,
+  updateBiro,
+  updateCategories,
+} from "../actions";
 import { useRouter } from "next/navigation";
 import { MyContext } from "./ProLayoutComp";
 
 const { Item } = Form;
-export default function TableNegara({ dataSource }: { dataSource: any[] }) {
+export default function TableBiro({ dataSource }: { dataSource: any[] }) {
   const openNotification = useContext(MyContext);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [kode_negara, setKodeNegara] = useState<string | null>(null);
+  const [id_biro, setIdBiro] = useState<number | null>(null);
   const [initialValue, setInitialValue] = useState<string | undefined>(
     undefined
   );
   const [formAdd] = Form.useForm();
   const [formUpdate] = Form.useForm();
-  const showUpdateModal = (kode_negara: string, initialValue: string) => {
-    setKodeNegara(kode_negara);
+  const showUpdateModal = (id_biro: number, initialValue: string) => {
+    setIdBiro(id_biro);
     setInitialValue(initialValue);
     setUpdateModalOpen(true);
   };
@@ -49,7 +54,7 @@ export default function TableNegara({ dataSource }: { dataSource: any[] }) {
         // icon={<PlusOutlined />}
         style={{ marginBottom: "10px" }}
       >
-        Add Country
+        Add Biro
       </Button>
 
       <Table
@@ -73,18 +78,12 @@ export default function TableNegara({ dataSource }: { dataSource: any[] }) {
           {
             align: "center",
             key: 3,
-            title: "Kode Negara",
-            dataIndex: "kode_negara",
-          },
-          {
-            align: "center",
-            key: 4,
             title: "Action",
             render(value, record, index) {
               return (
                 <Button
                   onClick={() => {
-                    showUpdateModal(record.kode_negara, record.nama);
+                    showUpdateModal(record.id_biro, record.nama);
                   }}
                   icon={<EditOutlined />}
                   type="dashed"
@@ -98,7 +97,7 @@ export default function TableNegara({ dataSource }: { dataSource: any[] }) {
       />
 
       <Modal
-        title={"Add Country"}
+        title={"Add Biro"}
         open={addModalOpen}
         onOk={() => formAdd.submit()}
         onCancel={hideAddModal}
@@ -106,61 +105,27 @@ export default function TableNegara({ dataSource }: { dataSource: any[] }) {
       >
         {loading != true ? (
           <Form
-            layout="vertical"
             form={formAdd}
             onFinish={async (values: any) => {
               setLoading(true);
               try {
-                await addNegara(values.kode_negara, values.negara);
+                await addBiro(values.biro);
                 router.refresh();
                 hideAddModal();
                 setLoading(false);
                 if (openNotification) {
-                  openNotification("success", "Successfully add new country");
+                  openNotification("success", "Successfully add new Biro");
                 }
               } catch (e) {
                 setLoading(false);
                 if (openNotification) {
-                  openNotification("error", "Failed to add new country");
+                  openNotification("error", "Failed to add new Biro");
                 }
               }
             }}
           >
             <Item
-              validateDebounce={1000}
-              hasFeedback
-              validateFirst={true}
-              name="kode_negara"
-              label="Country Code"
-              rules={[
-                { required: true, message: "Please fill this field!" },
-                {
-                  async validator(rule, value, callback) {
-                    let res;
-                    try {
-                      res = await checkKodeNegara(value);
-                    } catch (e) {
-                      return Promise.reject("Terjadi kesalahan pada database");
-                    }
-
-                    if (res[0].exists == false) {
-                      return Promise.resolve();
-                    } else if (res[0].exists == true) {
-                      return Promise.reject("The code is already taken");
-                    }
-                  },
-                },
-                {
-                  max: 5,
-                  message: "Too long! Please enter maximum 5 characters",
-                },
-              ]}
-            >
-              <Input />
-            </Item>
-            <Item
-              label="Name"
-              name="negara"
+              name="biro"
               rules={[
                 { required: true, message: "Please fill this field!" },
                 {
@@ -177,7 +142,7 @@ export default function TableNegara({ dataSource }: { dataSource: any[] }) {
         )}
       </Modal>
       <Modal
-        title="Update Country"
+        title="Update Biro"
         open={updateModalOpen}
         onOk={() => formUpdate.submit()}
         onCancel={hideUpdateModal}
@@ -189,25 +154,25 @@ export default function TableNegara({ dataSource }: { dataSource: any[] }) {
             onFinish={async (values: any) => {
               setLoading(true);
               try {
-                if (kode_negara) {
-                  await updateNegara(kode_negara, values.negara);
+                if (id_biro) {
+                  await updateBiro(id_biro, values.biro);
                 }
                 router.refresh();
                 hideUpdateModal();
                 setLoading(false);
                 if (openNotification) {
-                  openNotification("success", "Successfully update country");
+                  openNotification("success", "Successfully update Biro");
                 }
               } catch (e) {
                 setLoading(false);
                 if (openNotification) {
-                  openNotification("error", "Failed to update country");
+                  openNotification("error", "Failed to update Biro");
                 }
               }
             }}
           >
             <Item
-              name="negara"
+              name="biro"
               rules={[
                 { required: true, message: "Please fill this field!" },
                 {

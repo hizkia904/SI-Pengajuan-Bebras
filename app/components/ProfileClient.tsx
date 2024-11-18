@@ -31,18 +31,16 @@ const { Password } = Input;
 export default function ProfileClient({
   userData,
   id_user,
-  biro,
 }: {
   userData: any;
   id_user: number;
-  biro: any[];
 }) {
   const router = useRouter();
   const openNotification = useContext(MyContext);
   const items: DescriptionsProps["items"] = [
     {
       key: "1",
-      label: "UserName",
+      label: "Username",
       children: (
         <Text
           editable={{
@@ -124,27 +122,23 @@ export default function ProfileClient({
     {
       key: "4",
       label: "Biro",
-      children: (
-        <>
-          {userData.nama_biro}
-          <Button
-            icon={<EditOutlined />}
-            type="link"
-            size="small"
-            onClick={() => setOpenFormBiro(true)}
-          />
-        </>
-      ),
+      children: userData.nama_biro,
     },
     {
       key: "5",
       label: "Role",
       children: userData.role,
     },
+    ...(userData.role == "TIM NASIONAL"
+      ? [
+          {
+            key: "6",
+            label: "Ketua",
+            children: userData.ketua == true ? "Ya" : "Tidak",
+          },
+        ]
+      : []),
   ];
-
-  const [openFormBiro, setOpenFormBiro] = useState(false);
-  const [formBiro] = Form.useForm();
 
   const [openFormPass, setOpenFormPass] = useState(false);
   const [tahap, setTahap] = useState<"input_old" | "input_new">("input_old");
@@ -277,50 +271,6 @@ export default function ProfileClient({
             },
           ]}
         />
-      </Modal>
-      <Modal
-        open={openFormBiro}
-        onCancel={() => {
-          formBiro.resetFields();
-          setOpenFormBiro(false);
-        }}
-        onOk={() => formBiro.submit()}
-      >
-        <Form
-          form={formBiro}
-          layout="vertical"
-          onFinish={async (values: any) => {
-            try {
-              if (id_user) {
-                await changeBiro(values.biro, id_user);
-              }
-              router.refresh();
-              setOpenFormBiro(false);
-              if (openNotification) {
-                openNotification("success", "Successfully change biro");
-              }
-            } catch (e) {
-              if (openNotification) {
-                openNotification("error", "Failed to change biro");
-              }
-            }
-          }}
-        >
-          <Item
-            label="Biro"
-            name="biro"
-            rules={[{ required: true, message: "Please fill out this field" }]}
-          >
-            <Select
-              defaultValue={userData.id_biro}
-              showSearch
-              optionFilterProp="nama"
-              placeholder="Biro"
-              fieldNames={{ label: "nama", value: "id_biro" }}
-              options={biro}
-            />
-          </Item>
-        </Form>
       </Modal>
     </>
   );

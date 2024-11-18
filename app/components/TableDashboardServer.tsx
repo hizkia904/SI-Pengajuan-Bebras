@@ -23,21 +23,24 @@ export default async function TableDashboardServer() {
   }
   const id_user = user.id;
   const role = user.role;
-  const tambahanQueryUntukBiro =
-    " inner join pembuat_soal_usulan p on p.id_soal_usulan=s.id_soal_usulan ";
   const tambahanQueryUntukBiro2 = "and p.id_user=$1 ";
+  const tambahanQueryUntukTimNasional =
+    ",count( distinct id_biro) as partisipasibiro ";
   try {
     const queryDashboardData =
       "select tahun," +
-      "count( case when status_nasional='ACCEPTED' then 1 END) as nasionalaccepted," +
-      "count( case when status_nasional='REJECTED' then 1 END) as nasionalrejected," +
-      "count( case when gotointernational=true then 1 END) as gotointernational," +
-      "count( case when status_internasional='ACCEPTED' then 1 END) as internationalaccepted," +
-      "count( case when status_internasional='HELDBACK' then 1 END) as internationalheldback," +
-      "count( case when status_internasional='WORK NEEDED' then 1 END) as internationalworkneeded," +
-      "count(s.id_soal_usulan) as totalsoalterkumpul," +
-      "count( distinct biro) as partisipasibiro " +
-      `from soal_usulan s ${role == "BIRO" ? tambahanQueryUntukBiro : ""}` +
+      "count( DISTINCT case when status_nasional='ACCEPTED' then s.id_soal_usulan END) as nasionalaccepted," +
+      "count( DISTINCT case when status_nasional='REJECTED' then s.id_soal_usulan END) as nasionalrejected," +
+      "count( DISTINCT case when gotointernational=true then s.id_soal_usulan END) as gotointernational," +
+      "count( DISTINCT case when status_internasional='ACCEPTED' then s.id_soal_usulan END) as internationalaccepted," +
+      "count( DISTINCT case when status_internasional='HELDBACK' then s.id_soal_usulan END) as internationalheldback," +
+      "count( DISTINCT case when status_internasional='WORK NEEDED' then s.id_soal_usulan END) as internationalworkneeded," +
+      `count(distinct s.id_soal_usulan) as totalsoalterkumpul ${
+        role == "TIM NASIONAL" ? tambahanQueryUntukTimNasional : " "
+      }` +
+      `from soal_usulan s ` +
+      " inner join pembuat_soal_usulan p on p.id_soal_usulan=s.id_soal_usulan " +
+      " inner join user_bebras u on u.id=p.id_user " +
       `where archived=true ${role == "BIRO" ? tambahanQueryUntukBiro2 : ""}` +
       "group by tahun order by tahun";
     const getDashboardData = await runQuery(
@@ -57,14 +60,16 @@ export default async function TableDashboardServer() {
       grafik.totalsoalterkumpul.push(dashboard[i].totalsoalterkumpul);
       grafik.partisipasibiro.push(dashboard[i].partisipasibiro);
     }
-    console.log(grafik.internationalworkNeeded);
   } catch (e) {
-    console.log(e);
     dashboard = null;
     grafik = null;
   }
   return dashboard != null && grafik != null ? (
-    <TabelDashboardClient dashboardData={dashboard} grafik={grafik} />
+    <TabelDashboardClient
+      role={role}
+      dashboardData={dashboard}
+      grafik={grafik}
+    />
   ) : (
     <ErrorResult subtitle="Unabled to display dashboard" />
   );

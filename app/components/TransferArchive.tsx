@@ -1,6 +1,4 @@
-import { Transfer } from "antd/lib";
 import { runQuery } from "../db";
-import TransferArchiveClient from "./TransferArchiveClient";
 import TransferArchiveClient2 from "./TransferArchiveClient2";
 
 export default async function TransferArchive() {
@@ -27,8 +25,6 @@ export default async function TransferArchive() {
     } else {
       pengajuanDariArchived = getPengajuanDariArchived.rows[0].array_agg;
     }
-
-    console.log(getPengajuanDariArchived.rows);
   } catch (e) {
     archiveAccepted = null;
     pengajuanDariArchived = null;
