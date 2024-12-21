@@ -16,31 +16,25 @@ import {
 } from "antd";
 
 import { Form, Select } from "antd";
-import { DefaultOptionType } from "antd/es/cascader";
-import CustomCascader from "./CustomCascader";
 import { Fragment, ReactNode, useContext, useEffect, useState } from "react";
 import {
-  ArrowLeftOutlined,
   LoadingOutlined,
   MinusCircleOutlined,
   PlusOutlined,
-  ReloadOutlined,
   SendOutlined,
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { Authors, BebrasTask, imagePath, ValuesFormAddTask } from "@/interface";
-import dynamic from "next/dynamic";
+
 import JoditEditor from "./JoditEditor";
-// const JoditEditor = dynamic(() => import("./JoditEditor"), {
-//   ssr: false,
-// });
+
 import { addTask, updateTask } from "../actions";
 import { MyContext } from "./ProLayoutComp";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 
 const { Item, List } = Form;
-const { Title, Paragraph } = Typography;
+// const { Title, Paragraph } = Typography;
 export default function FormAddTask({
   categories,
   age,
@@ -53,7 +47,10 @@ export default function FormAddTask({
   id_soal_usulan,
   chosenImage,
   roleUser,
+  biro,
+  non_registered_author,
 }: {
+  biro: any[];
   categories: any[];
   age: any[];
   anggota: any[];
@@ -65,6 +62,7 @@ export default function FormAddTask({
   chosenAuthors?: Authors[];
   chosenImage?: imagePath[];
   roleUser?: string;
+  non_registered_author?: any[];
 }) {
   const [form] = Form.useForm();
 
@@ -381,9 +379,7 @@ export default function FormAddTask({
                       initialValue={
                         editedValue == undefined
                           ? false
-                          : editedValue.keep_order == "true"
-                          ? true
-                          : false
+                          : editedValue.keep_order
                       }
                       label="Keep order of multiple-choice/-select"
                     >
@@ -666,19 +662,19 @@ export default function FormAddTask({
                     : chosenAuthors
                 }
                 name="authors_peran"
-                rules={[
-                  {
-                    validator: async (_, names) => {
-                      if (!names || names.length < 1) {
-                        return Promise.reject(
-                          new Error("Please fill at least 1 authors")
-                        );
-                      } else {
-                        return Promise.resolve();
-                      }
-                    },
-                  },
-                ]}
+                // rules={[
+                //   {
+                //     validator: async (_, names) => {
+                //       if (!names || names.length < 1) {
+                //         return Promise.reject(
+                //           new Error("Please fill at least 1 authors")
+                //         );
+                //       } else {
+                //         return Promise.resolve();
+                //       }
+                //     },
+                //   },
+                // ]}
               >
                 {(
                   fields: FormListFieldData[],
@@ -811,6 +807,152 @@ export default function FormAddTask({
                         }}
                       >
                         Add Authors
+                      </Button>
+                      <Form.ErrorList errors={meta.errors} />
+                    </Item>
+                  </>
+                )}
+              </List>
+            </Item>
+            <Item>
+              <Alert
+                message="Info"
+                description="If the author is not exist on the dropdown above, add the author below!"
+                type="info"
+                showIcon
+              />
+            </Item>
+            <Item>
+              <List
+                initialValue={
+                  non_registered_author == undefined
+                    ? []
+                    : non_registered_author
+                }
+                name="non_registered_authors_peran"
+                rules={[
+                  {
+                    validator: async (_, names) => {
+                      if (
+                        form.getFieldValue("authors_peran").length == 0 &&
+                        form.getFieldValue("non_registered_authors_peran")
+                          .length == 0
+                      ) {
+                        return Promise.reject(
+                          new Error("Please fill at least 1 authors")
+                        );
+                      } else {
+                        return Promise.resolve();
+                      }
+                    },
+                  },
+                ]}
+              >
+                {(
+                  fields: FormListFieldData[],
+                  { add, remove },
+                  meta: { errors: ReactNode[]; warnings: ReactNode[] }
+                ) => (
+                  <>
+                    {fields.map(
+                      (
+                        { key, name, ...restField },
+                        index: number,
+                        array: FormListFieldData[]
+                      ) => {
+                        return (
+                          <Fragment key={key}>
+                            <Row gutter={5}>
+                              <Col span={6}>
+                                <Item
+                                  // dependencies={dependencies}
+                                  {...restField}
+                                  name={[name, "authors"]}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please fill this field!",
+                                    },
+                                  ]}
+                                >
+                                  <Input placeholder="Name" />
+                                </Item>
+                              </Col>
+                              <Col span={6}>
+                                <Item
+                                  name={[name, "email"]}
+                                  {...restField}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please fill this field!",
+                                    },
+                                  ]}
+                                >
+                                  <Input placeholder="Email" />
+                                </Item>
+                              </Col>
+                              <Col span={3}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "peran"]}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please fill this field!",
+                                    },
+                                  ]}
+                                >
+                                  <Select
+                                    style={{ width: "100%" }}
+                                    placeholder="Role"
+                                    options={role}
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col span={8}>
+                                <Item
+                                  name={[name, "biro"]}
+                                  {...restField}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please fill this field!",
+                                    },
+                                  ]}
+                                >
+                                  <Select
+                                    style={{ width: "100%" }}
+                                    placeholder="Biro"
+                                    options={biro}
+                                    fieldNames={{
+                                      label: "nama",
+                                      value: "id_biro",
+                                    }}
+                                  />
+                                </Item>
+                              </Col>
+                              <Col span={1}>
+                                <Button
+                                  icon={<MinusCircleOutlined />}
+                                  onClick={() => remove(name)}
+                                  type="text"
+                                />
+                              </Col>
+                            </Row>
+                          </Fragment>
+                        );
+                      }
+                    )}
+                    <Item>
+                      <Button
+                        icon={<PlusOutlined />}
+                        block
+                        onClick={() => {
+                          add();
+                        }}
+                      >
+                        Add Unregistered Authors
                       </Button>
                       <Form.ErrorList errors={meta.errors} />
                     </Item>

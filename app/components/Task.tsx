@@ -15,6 +15,7 @@ export default async function Task({ task_id }: { task_id: string }) {
   let dataAge;
   let dataKategori;
   let dataPembuatSoal;
+  let non_registerd_authors;
   try {
     const query =
       "select " +
@@ -193,6 +194,22 @@ export default async function Task({ task_id }: { task_id: string }) {
     );
   }
 
+  //pembuat soal yang tidak terdaftar
+  try {
+    const query_non_registered_author =
+      "select id_pembuat_soal,nama,peran,email from non_registered_author where id_soal_usulan=$1";
+    const get_non_registered_author = await runQuery(
+      query_non_registered_author,
+      [task_id]
+    );
+    non_registerd_authors = get_non_registered_author.rows;
+  } catch (e) {
+    non_registerd_authors = (
+      <Text type="danger" italic>
+        Failed to get authors of the task
+      </Text>
+    );
+  }
   return (
     <>
       <Row gutter={20}>
@@ -223,7 +240,7 @@ export default async function Task({ task_id }: { task_id: string }) {
                 key: "keep_order",
                 label: "Keep Order",
                 children:
-                  dataKontenSoal.keep_order == "true" ? (
+                  dataKontenSoal.keep_order == true ? (
                     <CheckCircleOutlined
                       style={{ fontSize: "1em", color: "green" }}
                     />
@@ -456,6 +473,16 @@ export default async function Task({ task_id }: { task_id: string }) {
                   );
                 })
               : dataPembuatSoal}
+
+            {non_registerd_authors instanceof Array
+              ? non_registerd_authors.map((value: any, index: number) => {
+                  return (
+                    <Paragraph
+                      key={value.id_pembuat_soal}
+                    >{`${value.nama}, ${value.peran}, ${value.email}`}</Paragraph>
+                  );
+                })
+              : non_registerd_authors}
           </Paragraph>
         </Col>
         <Col span={5}>

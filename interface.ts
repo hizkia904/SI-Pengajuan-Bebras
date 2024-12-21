@@ -17,6 +17,9 @@ export interface ValuesFormAddTask {
   authors_peran: [{ authors: number; peran: string; main: boolean }];
   age_diff: [{ age: number; diff: string }];
   imagePaths: imagePath[];
+  non_registered_authors_peran: [
+    { authors: string; biro: number; email: string; peran: string }
+  ];
 }
 
 export interface imagePath {

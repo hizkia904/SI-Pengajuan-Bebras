@@ -28,6 +28,7 @@ export default async function Page({
   let isUploaderTrue: boolean | null;
   let isAuthorTrue: boolean | null;
   let isItExist: any[] | null;
+  let tahap: number | null;
   const { user } = await validateRequest();
   if (user == null) {
     return <p>Belum Login</p>;
@@ -52,10 +53,15 @@ export default async function Page({
       "select archived from soal_usulan where id_soal_usulan=$1";
     const getisItExist = await runQuery(queryisItExist, [id_soal_usulan]);
     isItExist = getisItExist.rows;
+
+    const queryTahapSekarang = "select tahap_sekarang from info_bebras";
+    const getTahap = await runQuery(queryTahapSekarang, []);
+    tahap = getTahap.rows[0].tahap_sekarang;
   } catch (e) {
     isUploaderTrue = null;
     isAuthorTrue = null;
     isItExist = null;
+    tahap = null;
   }
 
   return isAuthorTrue != null &&
@@ -86,13 +92,13 @@ export default async function Page({
             <Task task_id={id_soal_usulan} />
           </Suspense>
           <Suspense key="edit" fallback={<Skeleton active />}>
-            {isAuthorTrue == true ? (
+            {tahap != 7 ? (
               <UpdateTask id_soal_usulan={id_soal_usulan} />
             ) : (
               <Result
                 status={403}
                 title="You can't edit this task"
-                subTitle="You can't edit the task because you are not the author"
+                subTitle="You can't edit the task"
               />
             )}
           </Suspense>
@@ -157,7 +163,9 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
   let chosenCategories: any[] | null;
   let editedValue: BebrasTask | null;
   let chosenImage: imagePath[] | null;
-  let isAuthorTrue: boolean | null;
+
+  let non_registerd_authors: any[] | null;
+  let biro: any[] | null;
 
   try {
     const queryCategories = "select id_categories,nama from categories";
@@ -221,13 +229,17 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
     const getChosenImage = await runQuery(queryChosenImage, [id_soal_usulan]);
     chosenImage = getChosenImage.rows;
 
-    const queryIsAuthorTrue =
-      "select exists(select 1 from pembuat_soal_usulan where id_user=$1 and id_soal_usulan=$2)";
-    const getIsAuthor = await runQuery(queryIsAuthorTrue, [
-      id_user,
-      id_soal_usulan,
-    ]);
-    isAuthorTrue = getIsAuthor.rows[0].exists;
+    const query_non_registered_author =
+      "select nama as authors,email,peran,id_biro as biro from non_registered_author where id_soal_usulan=$1";
+    const get_non_registered_author = await runQuery(
+      query_non_registered_author,
+      [id_soal_usulan]
+    );
+    non_registerd_authors = get_non_registered_author.rows;
+
+    const queryBiro = "select id_biro,nama from biro";
+    const getBiro = await runQuery(queryBiro, []);
+    biro = getBiro.rows;
   } catch (e) {
     categories = null;
     age = null;
@@ -237,7 +249,8 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
     chosenCategories = null;
     editedValue = null;
     chosenImage = null;
-    isAuthorTrue = null;
+    non_registerd_authors = null;
+    biro = null;
   }
 
   return categories != null &&
@@ -248,27 +261,22 @@ async function UpdateTask({ id_soal_usulan }: { id_soal_usulan: string }) {
     chosenCategories != null &&
     editedValue != null &&
     chosenImage != null &&
-    isAuthorTrue != null ? (
-    isAuthorTrue == true ? (
-      <FormAddTask
-        id_user={id_user}
-        categories={categories}
-        age={age}
-        anggota={anggota}
-        chosenAuthors={chosenAuthors}
-        chosenAge={chosenAge}
-        chosenCategories={chosenCategories}
-        editedValue={editedValue}
-        id_soal_usulan={id_soal_usulan}
-        chosenImage={chosenImage}
-      />
-    ) : (
-      <Result
-        status={403}
-        title="You can't edit this task"
-        subTitle="You can't edit the task because you are not the author"
-      />
-    )
+    non_registerd_authors != null &&
+    biro != null ? (
+    <FormAddTask
+      id_user={id_user}
+      categories={categories}
+      age={age}
+      anggota={anggota}
+      chosenAuthors={chosenAuthors}
+      chosenAge={chosenAge}
+      chosenCategories={chosenCategories}
+      editedValue={editedValue}
+      id_soal_usulan={id_soal_usulan}
+      chosenImage={chosenImage}
+      non_registered_author={non_registerd_authors}
+      biro={biro}
+    />
   ) : (
     <ErrorResult subtitle="Unabled to add task" />
   );

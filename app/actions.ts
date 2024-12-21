@@ -121,7 +121,19 @@ export async function downloadUsingPandoc(
 
   const getPembuat = await runQuery(queryPembuat, arr);
 
-  const pembuat = getPembuat.rows;
+  let pembuat = getPembuat.rows;
+
+  const query_non_registered_author =
+    "select nama||', ' ||peran||', '||email||', '||'Indonesia' as pembuat from non_registered_author where id_soal_usulan=$1 ";
+
+  const get_non_registered_user = await runQuery(
+    query_non_registered_author,
+    arr
+  );
+
+  const non_registered_author = get_non_registered_user.rows;
+
+  pembuat = pembuat.concat(non_registered_author);
 
   const template_komen =
     "<p>EDIT ABOVE (keep this template and add above this line): author, " +
@@ -329,14 +341,14 @@ export async function addRating(
         const { rating_as_for_now, rating_potential, nama } = values;
 
         query =
-          "update rating_internasional_soal_usulan " +
+          "update rating_internasional " +
           "set name=$1,as_for_now=$2,potential=$3 where id_rating_internasional=$4";
 
         arr = [nama, rating_as_for_now, rating_potential, id_rating];
       } else {
         const { rating_as_for_now, rating_potential, nama } = values;
         query =
-          "insert into rating_internasional_soal_usulan(id_soal_usulan,name,as_for_now,potential) " +
+          "insert into rating_internasional(id_soal_usulan,name,as_for_now,potential) " +
           "values ($1,$2,$3,$4)";
 
         arr = [id_soal_usulan, nama, rating_as_for_now, rating_potential];
@@ -755,13 +767,14 @@ export async function addTask(
     const categories = values.categories;
     const authors = values.authors_peran;
     const age = values.age_diff;
+    const non_registered_author = values.non_registered_authors_peran;
 
     await client.query("BEGIN");
 
     // tambah add task
     const queryAddTask =
       "insert into soal_usulan(uploader,who_last_updated,soal,last_updated,tahun,status_nasional) " +
-      "VALUES ($16,$17,ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),now(),$15,$18) returning id_soal_usulan;";
+      "VALUES ($16,$17,ROW($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14),now(),$15,$18) returning id_soal_usulan;";
 
     const hasilAddTask = await client.query(queryAddTask, [
       title,
@@ -817,20 +830,57 @@ export async function addTask(
 
     // tambah pembuat soal
 
-    let queryPembuatSoal =
-      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran) VALUES";
-    const arrPembuatSoal = [];
-    angka = 1;
-    for (let i = 0; i < authors.length; i++) {
-      if (i != authors.length - 1) {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2}),`;
-      } else {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2});`;
+    if (authors.length > 0) {
+      let queryPembuatSoal =
+        "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran) VALUES";
+      const arrPembuatSoal = [];
+      angka = 1;
+      for (let i = 0; i < authors.length; i++) {
+        if (i != authors.length - 1) {
+          queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2}),`;
+        } else {
+          queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2});`;
+        }
+        angka += 3;
+        arrPembuatSoal.push(
+          authors[i].authors,
+          id_soal_usulan,
+          authors[i].peran
+        );
       }
-      angka += 3;
-      arrPembuatSoal.push(authors[i].authors, id_soal_usulan, authors[i].peran);
+      await client.query(queryPembuatSoal, arrPembuatSoal);
     }
-    await client.query(queryPembuatSoal, arrPembuatSoal);
+    //tambah pembuat soal yang tidak terdaftar
+
+    if (non_registered_author.length > 0) {
+      let query_non_registered_author =
+        "insert into non_registered_author(id_soal_usulan,nama,peran,email,id_biro) VALUES";
+      const arr_non_registered_author = [];
+      angka = 1;
+      for (let i = 0; i < non_registered_author.length; i++) {
+        if (i != non_registered_author.length - 1) {
+          query_non_registered_author += `($${angka},$${angka + 1},$${
+            angka + 2
+          },$${angka + 3},$${angka + 4}),`;
+        } else {
+          query_non_registered_author += `($${angka},$${angka + 1},$${
+            angka + 2
+          },$${angka + 3},$${angka + 4});`;
+        }
+        angka += 5;
+        arr_non_registered_author.push(
+          id_soal_usulan,
+          non_registered_author[i].authors,
+          non_registered_author[i].peran,
+          non_registered_author[i].email,
+          non_registered_author[i].biro
+        );
+      }
+      await client.query(
+        query_non_registered_author,
+        arr_non_registered_author
+      );
+    }
     // tambah usia dari target soal
 
     let queryAge =
@@ -874,7 +924,7 @@ export async function addTask(
   } catch (e) {
     await client.query("ROLLBACK");
     client.release();
-
+    console.log(e);
     throw new Error("Unabled to add task");
   }
 }
@@ -908,13 +958,14 @@ export async function updateTask(
     const categories = values.categories;
     const authors = values.authors_peran;
     const age = values.age_diff;
+    const non_registered_author = values.non_registered_authors_peran;
 
     await client.query("BEGIN");
 
     // tambah add task
     const queryUpdateTask =
       "update soal_usulan " +
-      "set who_last_updated=$15,soal=ROW($1,null,$2,$3,null,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,null),last_updated=now() " +
+      "set who_last_updated=$15,soal=ROW($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14),last_updated=now() " +
       "where id_soal_usulan=$16";
 
     await client.query(queryUpdateTask, [
@@ -967,21 +1018,66 @@ export async function updateTask(
         [id_soal_usulan]
       );
     }
-    let queryPembuatSoal =
-      "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran) VALUES";
-    const arrPembuatSoal = [];
-    angka = 1;
-    for (let i = 0; i < authors.length; i++) {
-      if (i != authors.length - 1) {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2}),`;
-      } else {
-        queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2});`;
+
+    if (authors.length > 0) {
+      let queryPembuatSoal =
+        "insert into pembuat_soal_usulan(id_user,id_soal_usulan,peran) VALUES";
+      const arrPembuatSoal = [];
+      angka = 1;
+      for (let i = 0; i < authors.length; i++) {
+        if (i != authors.length - 1) {
+          queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2}),`;
+        } else {
+          queryPembuatSoal += `($${angka},$${angka + 1},$${angka + 2});`;
+        }
+        angka += 3;
+        arrPembuatSoal.push(
+          authors[i].authors,
+          id_soal_usulan,
+          authors[i].peran
+        );
       }
-      angka += 3;
-      arrPembuatSoal.push(authors[i].authors, id_soal_usulan, authors[i].peran);
+
+      await client.query(queryPembuatSoal, arrPembuatSoal);
     }
 
-    await client.query(queryPembuatSoal, arrPembuatSoal);
+    //tambah author yang tidak terdaftar
+    if (id_soal_usulan) {
+      await client.query(
+        "delete from non_registered_author where id_soal_usulan=$1",
+        [id_soal_usulan]
+      );
+    }
+
+    if (non_registered_author.length > 0) {
+      let query_non_registered_author =
+        "insert into non_registered_author(id_soal_usulan,nama,peran,email,id_biro) VALUES";
+      const arr_non_registered_author = [];
+      angka = 1;
+      for (let i = 0; i < non_registered_author.length; i++) {
+        if (i != non_registered_author.length - 1) {
+          query_non_registered_author += `($${angka},$${angka + 1},$${
+            angka + 2
+          },$${angka + 3},$${angka + 4}),`;
+        } else {
+          query_non_registered_author += `($${angka},$${angka + 1},$${
+            angka + 2
+          },$${angka + 3},$${angka + 4});`;
+        }
+        angka += 5;
+        arr_non_registered_author.push(
+          id_soal_usulan,
+          non_registered_author[i].authors,
+          non_registered_author[i].peran,
+          non_registered_author[i].email,
+          non_registered_author[i].biro
+        );
+      }
+      await client.query(
+        query_non_registered_author,
+        arr_non_registered_author
+      );
+    }
 
     // tambah usia dari target soal
     if (id_soal_usulan) {

@@ -21,7 +21,7 @@ export default async function RatingInternasionalServer({
 
   try {
     const queryRating =
-      "select id_rating_internasional,name,as_for_now,potential from rating_internasional_soal_usulan where id_soal_usulan=$1 order by id_rating_internasional desc";
+      "select id_rating_internasional,name,as_for_now,potential from rating_internasional where id_soal_usulan=$1 order by id_rating_internasional desc";
     const getRating = await runQuery(queryRating, [id_soal_usulan]);
     ratingInternasional = getRating.rows;
   } catch (e) {

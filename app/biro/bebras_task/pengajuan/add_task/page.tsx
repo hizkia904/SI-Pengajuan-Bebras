@@ -17,6 +17,7 @@ export default async function Page() {
   let age: any[] | null;
   let anggota: any[] | null;
   let tahap_sekarang: any | null;
+  let biro: any[] | null;
   try {
     const queryCategories = "select id_categories,nama from categories";
     const getCategories = await runQuery(queryCategories, []);
@@ -36,20 +37,27 @@ export default async function Page() {
     const getTahapSekarang = await runQuery(queryTahapSekarang, []);
     const tahap_rows = getTahapSekarang.rows;
     tahap_sekarang = tahap_rows[0].tahap_sekarang;
+
+    const queryBiro = "select id_biro,nama from biro";
+    const getBiro = await runQuery(queryBiro, []);
+    biro = getBiro.rows;
   } catch (e) {
     categories = null;
     age = null;
     anggota = null;
+    biro = null;
   }
 
   return (
     <>
-      {categories != null &&
+      {biro != null &&
+      categories != null &&
       age != null &&
       anggota != null &&
       tahap_sekarang != null ? (
         tahap_sekarang == 1 ? (
           <FormAddTask
+            biro={biro}
             id_user={id_user}
             categories={categories}
             age={age}
