@@ -29,6 +29,17 @@ export default async function Page({
   let isAuthorTrue: boolean | null;
   let isItExist: any[] | null;
   let tahap: number | null;
+  let majuInternasional: {
+    gotointernational: boolean;
+    status_nasional:
+      | "SUBMITTED"
+      | "IN REVIEW"
+      | "IN REVISE"
+      | "FILTERING"
+      | "ACCEPTED"
+      | "REJECTED"
+      | "ADDED FROM ARCHIVE";
+  } | null;
   const { user } = await validateRequest();
   if (user == null) {
     return <p>Belum Login</p>;
@@ -57,14 +68,23 @@ export default async function Page({
     const queryTahapSekarang = "select tahap_sekarang from info_bebras";
     const getTahap = await runQuery(queryTahapSekarang, []);
     tahap = getTahap.rows[0].tahap_sekarang;
+
+    const query_maju_internasional =
+      "select status_nasional,gotointernational from soal_usulan where id_soal_usulan=$1";
+    const getMajuInternasional = await runQuery(query_maju_internasional, [
+      id_soal_usulan,
+    ]);
+    majuInternasional = getMajuInternasional.rows[0];
   } catch (e) {
     isUploaderTrue = null;
     isAuthorTrue = null;
     isItExist = null;
     tahap = null;
+    majuInternasional = null;
   }
 
-  return isAuthorTrue != null &&
+  return majuInternasional != null &&
+    isAuthorTrue != null &&
     isUploaderTrue !== null &&
     isItExist != null ? (
     isItExist.length == 0 ? (
@@ -92,7 +112,11 @@ export default async function Page({
             <Task task_id={id_soal_usulan} />
           </Suspense>
           <Suspense key="edit" fallback={<Skeleton active />}>
-            {tahap != 7 ? (
+            {tahap == 1 ||
+            tahap == 3 ||
+            (tahap == 6 &&
+              majuInternasional.status_nasional == "ACCEPTED" &&
+              majuInternasional.gotointernational == true) ? (
               <UpdateTask id_soal_usulan={id_soal_usulan} />
             ) : (
               <Result

@@ -72,7 +72,7 @@ export default async function TableArchiveServer({
   }
 
   const additionQuery =
-    "inner join pembuat_soal_usulan p on " +
+    "left join pembuat_soal_usulan p on " +
     "p.id_soal_usulan = s.id_soal_usulan ";
 
   const additionCondition = ` and (p.id_user=$${counter} or s.uploader=$${counter}) `;

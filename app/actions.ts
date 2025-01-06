@@ -76,7 +76,8 @@ export async function downloadUsingPandoc(
 ): Promise<ArrayBuffer> {
   const query =
     "SELECT " +
-    "replace((soal).answer_type,' ','_') as answer_type," +
+    // "replace((soal).answer_type,' ','_') as answer_type," +
+    "REPLACE(REPLACE(REPLACE(REPLACE((soal).answer_type, ' ', '_'), '(', '_'), ')', '_'), '&', '_') as answer_type," +
     "(soal).task_title," +
     "(soal).keep_order," +
     "(soal).body," +
@@ -199,7 +200,7 @@ ${
     "./template/replace.lua",
   ];
 
-  if (konten.keep_order == "true") {
+  if (konten.keep_order == true) {
     args.push("-V");
     args.push("keep_order");
   }

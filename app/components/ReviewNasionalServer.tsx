@@ -1,9 +1,11 @@
+import { Result } from "antd";
 import { validateRequest } from "../auth";
 import { runQuery } from "../db";
 import ErrorResult from "./ErrorResult";
 import FormReviewNasional from "./FormReviewNasional";
 
 import ReviewNasionalClient from "./ReviewNasionalClient";
+import DisplayReview from "./DisplayReview";
 
 export default async function ReviewNasionalServer({
   id_soal_usulan,
@@ -18,7 +20,8 @@ export default async function ReviewNasionalServer({
   }
   const role = user.role;
   const id_user = user.id;
-  let review: any[] | string;
+  let review: any[] | null;
+  let tahap_sekarang: number | "tidak perlu" | null;
   try {
     let queryReview;
     //tim nasional archive
@@ -48,6 +51,7 @@ export default async function ReviewNasionalServer({
         "from review_nasional r inner join user_bebras u on r.id_user=u.id where id_soal_usulan=$1";
       const getReview = await runQuery(queryReview, [id_soal_usulan]);
       review = getReview.rows;
+      tahap_sekarang = "tidak perlu";
     } else {
       //tim nasional pengajuan (beda)
       queryReview =
@@ -72,20 +76,33 @@ export default async function ReviewNasionalServer({
         "from review_nasional where id_user=$1 and id_soal_usulan=$2";
       const getReview = await runQuery(queryReview, [id_user, id_soal_usulan]);
       review = getReview.rows;
+
+      const queryTahapSekarang = "select tahap_sekarang from info_bebras";
+      const getTahap = await runQuery(queryTahapSekarang, []);
+      tahap_sekarang = getTahap.rows[0].tahap_sekarang;
     }
   } catch (e) {
-    review = "Unabled to display review!";
+    review = null;
+    review = null;
+    tahap_sekarang = null;
   }
 
-  return typeof review == "string" ? (
-    <ErrorResult subtitle={review} />
+  return review == null || tahap_sekarang == null ? (
+    <ErrorResult subtitle="Unabled to display review!" />
   ) : role == "BIRO" || (role == "TIM NASIONAL" && tujuan == "ARCHIVE") ? (
     <ReviewNasionalClient review={review} />
-  ) : (
+  ) : tahap_sekarang == 2 || tahap_sekarang == 3 ? (
     <FormReviewNasional
       id_user={id_user}
       id_soal_usulan={id_soal_usulan}
       review={review}
     />
+  ) : tahap_sekarang == 4 ||
+    tahap_sekarang == 5 ||
+    tahap_sekarang == 6 ||
+    tahap_sekarang == 7 ? (
+    <DisplayReview review={review} />
+  ) : (
+    <Result subTitle="Unabled to add or edit review" status="404" />
   );
 }

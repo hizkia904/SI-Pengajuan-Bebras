@@ -244,7 +244,7 @@ export default async function Task({ task_id }: { task_id: string }) {
                     <CheckCircleOutlined
                       style={{ fontSize: "1em", color: "green" }}
                     />
-                  ) : dataKontenSoal.keep_order == "false" ? (
+                  ) : dataKontenSoal.keep_order == false ? (
                     <CloseCircleOutlined
                       style={{ fontSize: "1em", color: "red" }}
                     />

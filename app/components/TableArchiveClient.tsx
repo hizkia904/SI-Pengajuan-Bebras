@@ -438,8 +438,39 @@ export function TableArchiveClient({
                     label: "Multiple-Choice with Images",
                     value: "Multiple-Choice with Images",
                   },
-                  { label: "Open Integer", value: "Open Integer" },
-                  { label: "Open Text", value: "Open Text" },
+                  { label: "Multiple-Select", value: "Multiple-Select" },
+                  {
+                    label: "Multiple-Select with Images",
+                    value: "Multiple-Select with Images",
+                  },
+                  {
+                    label: "Dropdown-Select",
+                    value: "Dropdown-Select",
+                  },
+                  {
+                    label: "Open Integer",
+                    value: "Open Integer",
+                  },
+                  {
+                    label: "Open Text",
+                    value: "Open Text",
+                  },
+                  {
+                    label: "Interactive (Click-On-Object)",
+                    value: "Interactive (Click-On-Object)",
+                  },
+                  {
+                    label: "Interactive (Drag & Drop)",
+                    value: "Interactive (Drag & Drop)",
+                  },
+                  {
+                    label: "Interactive (Other)",
+                    value: "Interactive (Other)",
+                  },
+                  {
+                    label: "Other",
+                    value: "Other",
+                  },
                 ]}
                 onChange={(value: any) => {
                   const params = new URLSearchParams(searchParams.toString());
