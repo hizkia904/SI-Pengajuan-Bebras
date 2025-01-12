@@ -452,7 +452,24 @@ export default function FormAddTask({
             </Divider>
             <Item
               name="body"
-              rules={[{ required: true, message: "Please fill this field!" }]}
+              rules={[
+                {
+                  validator(rule, value, callback) {
+                    if (
+                      value == "<p><br></p>" ||
+                      value == "" ||
+                      value == "<p></p>" ||
+                      value == null
+                    ) {
+                      return Promise.reject(
+                        new Error("Please fill this field!")
+                      );
+                    } else {
+                      return Promise.resolve();
+                    }
+                  },
+                },
+              ]}
               initialValue={editedValue?.body}
             >
               <JoditEditor
@@ -478,7 +495,24 @@ export default function FormAddTask({
             <Item
               initialValue={editedValue?.question}
               name="question"
-              rules={[{ required: true, message: "Please fill this field!" }]}
+              rules={[
+                {
+                  validator(rule, value, callback) {
+                    if (
+                      value == "<p><br></p>" ||
+                      value == "" ||
+                      value == "<p></p>" ||
+                      value == null
+                    ) {
+                      return Promise.reject(
+                        new Error("Please fill this field!")
+                      );
+                    } else {
+                      return Promise.resolve();
+                    }
+                  },
+                },
+              ]}
             >
               <JoditEditor
                 useID={true}
@@ -503,7 +537,24 @@ export default function FormAddTask({
             <Item
               initialValue={editedValue?.answer_options}
               name="answer_options"
-              rules={[{ required: true, message: "Please fill this field!" }]}
+              rules={[
+                {
+                  validator(rule, value, callback) {
+                    if (
+                      value == "<p><br></p>" ||
+                      value == "" ||
+                      value == "<p></p>" ||
+                      value == null
+                    ) {
+                      return Promise.reject(
+                        new Error("Please fill this field!")
+                      );
+                    } else {
+                      return Promise.resolve();
+                    }
+                  },
+                },
+              ]}
             >
               <JoditEditor
                 useID={true}
@@ -528,7 +579,24 @@ export default function FormAddTask({
             <Item
               initialValue={editedValue?.answer_explanation}
               name="answer_explanation"
-              rules={[{ required: true, message: "Please fill this field!" }]}
+              rules={[
+                {
+                  validator(rule, value, callback) {
+                    if (
+                      value == "<p><br></p>" ||
+                      value == "" ||
+                      value == "<p></p>" ||
+                      value == null
+                    ) {
+                      return Promise.reject(
+                        new Error("Please fill this field!")
+                      );
+                    } else {
+                      return Promise.resolve();
+                    }
+                  },
+                },
+              ]}
             >
               <JoditEditor
                 useID={true}
@@ -553,7 +621,24 @@ export default function FormAddTask({
             <Item
               initialValue={editedValue?.this_is_if}
               name="this_is_if"
-              rules={[{ required: true, message: "Please fill this field!" }]}
+              rules={[
+                {
+                  validator(rule, value, callback) {
+                    if (
+                      value == "<p><br></p>" ||
+                      value == "" ||
+                      value == "<p></p>" ||
+                      value == null
+                    ) {
+                      return Promise.reject(
+                        new Error("Please fill this field!")
+                      );
+                    } else {
+                      return Promise.resolve();
+                    }
+                  },
+                },
+              ]}
             >
               <JoditEditor
                 useID={true}
@@ -578,7 +663,24 @@ export default function FormAddTask({
             <Item
               initialValue={editedValue?.this_is_ct}
               name="this_is_ct"
-              rules={[{ required: true, message: "Please fill this field!" }]}
+              rules={[
+                {
+                  validator(rule, value, callback) {
+                    if (
+                      value == "<p><br></p>" ||
+                      value == "" ||
+                      value == "<p></p>" ||
+                      value == null
+                    ) {
+                      return Promise.reject(
+                        new Error("Please fill this field!")
+                      );
+                    } else {
+                      return Promise.resolve();
+                    }
+                  },
+                },
+              ]}
             >
               <JoditEditor
                 useID={true}
@@ -603,13 +705,31 @@ export default function FormAddTask({
             <Item
               initialValue={editedValue?.if_keywords}
               name="if_keywords"
-              rules={[{ required: true, message: "Please fill this field!" }]}
+              rules={[
+                {
+                  validator(rule, value, callback) {
+                    if (
+                      value == "<p><br></p>" ||
+                      value == "" ||
+                      value == "<p></p>" ||
+                      value == null
+                    ) {
+                      return Promise.reject(
+                        new Error("Please fill this field!")
+                      );
+                    } else {
+                      return Promise.resolve();
+                    }
+                  },
+                },
+              ]}
             >
               <JoditEditor
                 useID={true}
                 value={form.getFieldValue("if_keywords")}
                 setField={setField}
                 nama="if_keywords"
+                useImage={false}
               />
             </Item>
             <Divider style={{ borderColor: "#1677ff" }}>
@@ -628,7 +748,22 @@ export default function FormAddTask({
               initialValue={editedValue?.ct_keywords}
               name="ct_keywords"
               rules={[
-                { required: true, message: "Please insert ct keywords!" },
+                {
+                  validator(rule, value, callback) {
+                    if (
+                      value == "<p><br></p>" ||
+                      value == "" ||
+                      value == "<p></p>" ||
+                      value == null
+                    ) {
+                      return Promise.reject(
+                        new Error("Please fill this field!")
+                      );
+                    } else {
+                      return Promise.resolve();
+                    }
+                  },
+                },
               ]}
             >
               <JoditEditor
@@ -636,6 +771,7 @@ export default function FormAddTask({
                 value={form.getFieldValue("ct_keywords")}
                 setField={setField}
                 nama="ct_keywords"
+                useImage={false}
               />
             </Item>
             <Divider style={{ borderColor: "#1677ff" }}>
@@ -649,6 +785,7 @@ export default function FormAddTask({
                 value={form.getFieldValue("wording_phrases")}
                 setField={setField}
                 nama="wording_phrases"
+                useImage={false}
               />
             </Item>
             <Divider style={{ borderColor: "#1677ff" }}>Comments</Divider>
@@ -657,6 +794,7 @@ export default function FormAddTask({
                 value={form.getFieldValue("comments")}
                 setField={setField}
                 nama="comments"
+                useImage={false}
               />
             </Item>
             <Divider style={{ borderColor: "#1677ff" }}>Graphics</Divider>
@@ -665,6 +803,7 @@ export default function FormAddTask({
                 value={form.getFieldValue("graphics")}
                 setField={setField}
                 nama="graphics"
+                useImage={false}
               />
             </Item>
             <Divider style={{ borderColor: "#1677ff" }}>

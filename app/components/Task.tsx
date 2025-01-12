@@ -182,8 +182,8 @@ export default async function Task({ task_id }: { task_id: string }) {
   //pembuat soal
   try {
     const queryPembuatSoal =
-      "select id_pembuat_soal,user_bebras.nama,user_bebras.email,peran from pembuat_soal_usulan inner join user_bebras" +
-      " on user_bebras.id = pembuat_soal_usulan.id_user where id_soal_usulan=$1";
+      "select id_pembuat_soal,u.nama,u.email,peran,b.nama as universitas from pembuat_soal_usulan p inner join user_bebras u" +
+      " on u.id = p.id_user inner join biro b on u.id_biro=b.id_biro where id_soal_usulan=$1";
     const getDataPembuatSoal = await runQuery(queryPembuatSoal, [task_id]);
     dataPembuatSoal = getDataPembuatSoal.rows;
   } catch (e) {
@@ -197,7 +197,7 @@ export default async function Task({ task_id }: { task_id: string }) {
   //pembuat soal yang tidak terdaftar
   try {
     const query_non_registered_author =
-      "select id_pembuat_soal,nama,peran,email from non_registered_author where id_soal_usulan=$1";
+      "select id_pembuat_soal,n.nama,peran,email,b.nama as universitas from non_registered_author n inner join biro b on n.id_biro=b.id_biro where id_soal_usulan=$1";
     const get_non_registered_author = await runQuery(
       query_non_registered_author,
       [task_id]
@@ -469,7 +469,7 @@ export default async function Task({ task_id }: { task_id: string }) {
                   return (
                     <Paragraph
                       key={value.id_pembuat_soal}
-                    >{`${value.nama}, ${value.peran}, ${value.email}`}</Paragraph>
+                    >{`${value.nama}, ${value.peran}, ${value.email} (${value.universitas})`}</Paragraph>
                   );
                 })
               : dataPembuatSoal}
@@ -479,7 +479,7 @@ export default async function Task({ task_id }: { task_id: string }) {
                   return (
                     <Paragraph
                       key={value.id_pembuat_soal}
-                    >{`${value.nama}, ${value.peran}, ${value.email}`}</Paragraph>
+                    >{`${value.nama}, ${value.peran}, ${value.email} (${value.universitas})`}</Paragraph>
                   );
                 })
               : non_registerd_authors}

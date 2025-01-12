@@ -146,11 +146,12 @@ export default function JoditEditor({
     // },
 
     onBlur(newValue) {
-      if (newValue == "<p><br></p>") {
-        setField(nama, "");
-      } else {
-        setField(nama, newValue);
-      }
+      // if (newValue == "<p><br></p>") {
+      //   setField(nama, "");
+      // } else {
+      //   setField(nama, newValue);
+      // }
+      setField(nama, newValue);
     },
 
     config: config,

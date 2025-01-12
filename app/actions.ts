@@ -708,6 +708,7 @@ export async function addTask(
   role: string
 ): Promise<void> {
   let tahapSekarang: number = -1;
+  console.log(values);
   try {
     //pastiin tahapnya sesuai
     const getTahapSekarang = await runQuery(
@@ -758,9 +759,26 @@ export async function addTask(
     const if_keywords = values.if_keywords;
     const ct_keywords = values.ct_keywords;
     const wording_phrases =
-      values.wording_phrases == "" ? null : values.wording_phrases;
-    const comments = values.comments == "" ? null : values.comments;
-    const graphics = values.graphics == "" ? null : values.graphics;
+      values.wording_phrases == undefined ||
+      values.wording_phrases == "<p><br></p>" ||
+      values.wording_phrases == "<p></p>" ||
+      values.wording_phrases == ""
+        ? null
+        : values.wording_phrases;
+    const comments =
+      values.comments == undefined ||
+      values.comments == "<p><br></p>" ||
+      values.comments == "<p></p>" ||
+      values.comments == ""
+        ? null
+        : values.comments;
+    const graphics =
+      values.graphics == undefined ||
+      values.graphics == "<p><br></p>" ||
+      values.graphics == "<p></p>" ||
+      values.graphics == ""
+        ? null
+        : values.graphics;
 
     const tahun = new Date().getFullYear();
     const answer_type = values.answer_type;
@@ -950,9 +968,26 @@ export async function updateTask(
     const if_keywords = values.if_keywords;
     const ct_keywords = values.ct_keywords;
     const wording_phrases =
-      values.wording_phrases == "" ? null : values.wording_phrases;
-    const comments = values.comments == "" ? null : values.comments;
-    const graphics = values.graphics == "" ? null : values.graphics;
+      values.wording_phrases == undefined ||
+      values.wording_phrases == "<p><br></p>" ||
+      values.wording_phrases == "<p></p>" ||
+      values.wording_phrases == ""
+        ? null
+        : values.wording_phrases;
+    const comments =
+      values.comments == undefined ||
+      values.comments == "<p><br></p>" ||
+      values.comments == "<p></p>" ||
+      values.comments == ""
+        ? null
+        : values.comments;
+    const graphics =
+      values.graphics == undefined ||
+      values.graphics == "<p><br></p>" ||
+      values.graphics == "<p></p>" ||
+      values.graphics == ""
+        ? null
+        : values.graphics;
 
     const answer_type = values.answer_type;
 
