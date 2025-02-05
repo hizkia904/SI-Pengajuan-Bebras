@@ -126,7 +126,16 @@ export default function DeadlineClient({
             {displayCountdown == false ? (
               <SkeletonInput active block={true} />
             ) : (
-              <Text type="danger">
+              <Text
+                type={
+                  countdown.days >= 2
+                    ? "success"
+                    : countdown.days >= 1
+                    ? "warning"
+                    : "danger"
+                }
+                style={{ fontSize: "15px" }}
+              >
                 {countdown.days} Days {countdown.hours} Hours{" "}
                 {countdown.minutes} Minutes {countdown.seconds} Seconds
               </Text>

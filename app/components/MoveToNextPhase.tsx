@@ -30,7 +30,6 @@ export default function MoveToNextPhase() {
         block
         icon={<DoubleRightOutlined />}
         type="default"
-        danger
       >
         Pindah ke tahap selanjutnya!
       </Button>

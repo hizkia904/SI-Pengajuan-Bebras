@@ -208,6 +208,7 @@ export default function TabelDashboardClient({
             bordered
             columns={columns}
             dataSource={dashboardData}
+            scroll={{ y: 54 * 7 }}
           />
         ) : (
           <>
